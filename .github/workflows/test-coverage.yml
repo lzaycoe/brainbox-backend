@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - main
-    pull_request:
-      types:
-        - opened
-        - synchronize
-        - reopened
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - dev
 
 jobs:
   validate:
@@ -30,7 +32,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pnpm install
+          pnpm install --frozen-lockfile
 
       - name: Build project
         run: |

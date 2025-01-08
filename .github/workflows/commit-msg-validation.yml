@@ -1,4 +1,4 @@
-name: Commit message validation
+name: Commit Message Validation
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   validate:
-    name: Validate commit messages
+    name: Validate Commit Messages
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +26,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pnpm install
+          pnpm install --frozen-lockfile
 
       - name: Validate commit messages
         run: |
