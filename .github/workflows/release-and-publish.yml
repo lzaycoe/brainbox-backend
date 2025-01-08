@@ -1,10 +1,7 @@
 name: Release and Publish
 
 on:
-  workflow_run:
-    workflows: [Test Coverage]
-    types:
-      - completed
+  push:
     branches:
       - main
     paths:
