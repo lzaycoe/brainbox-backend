@@ -1,0 +1,46 @@
+name: Test Coverage
+
+on:
+  push:
+    branches:
+      - main
+    pull_request:
+      types:
+        - opened
+        - synchronize
+        - reopened
+
+jobs:
+  validate:
+    name: Test Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.17.0
+
+      - name: Install pnpm
+        run: |
+          npm i -g pnpm
+
+      - name: Install dependencies
+        run: |
+          pnpm install
+
+      - name: Build project
+        run: |
+          pnpm run build
+
+      - name: Test and coverage
+        run: |
+          pnpm run test:cov
+
+      - name: Upload coverage reports to Codecov with GitHub Action
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
