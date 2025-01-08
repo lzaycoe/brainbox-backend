@@ -23,9 +23,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Get Version
+      - name: Get version from script
         id: get_version
-        uses: ./.github/actions/get-version
+        run: |
+          wget https://raw.githubusercontent.com/lzaycoe/brainbox-deployment/refs/heads/main/scripts/get-version.sh
+          sudo apt-get install jq
+          chmod +x ./get-version.sh
+          echo "version=$(./get-version.sh ./package.json)" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -48,9 +53,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Get Version
+      - name: Get version from script
         id: get_version
-        uses: ./.github/actions/get-version
+        run: |
+          wget https://raw.githubusercontent.com/lzaycoe/brainbox-deployment/refs/heads/main/scripts/get-version.sh
+          sudo apt-get install jq
+          chmod +x ./get-version.sh
+          echo "version=$(./get-version.sh ./package.json)" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Login ghcr.io
         uses: docker/login-action@v3
