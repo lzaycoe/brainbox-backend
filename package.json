@@ -6,7 +6,6 @@
 	"private": true,
 	"license": "GPL-3.0 license",
 	"scripts": {
-		"update-deps": "ncu -u --filter !@types/node",
 		"build": "nest build",
 		"format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
 		"start": "nest start",
@@ -18,7 +17,8 @@
 		"test:watch": "jest --watch",
 		"test:cov": "jest --coverage",
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-		"test:e2e": "jest --config ./test/jest-e2e.json"
+		"test:e2e": "jest --config ./test/jest-e2e.json",
+		"update-deps": "ncu -u --filter !@types/node"
 	},
 	"dependencies": {
 		"@nestjs/common": "10.4.15",
