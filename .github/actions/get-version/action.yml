@@ -3,10 +3,6 @@ name: Get Version
 runs:
   using: composite
 
-  defaults:
-    run:
-      shell: bash
-
   steps:
     - name: Get version
       id: get_version
@@ -15,3 +11,4 @@ runs:
         sudo apt-get install jq
         chmod +x ./get-version.sh
         echo "version=$(./get-version.sh ./package.json)" >> $GITHUB_OUTPUT
+      shell: bash
