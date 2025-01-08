@@ -29,6 +29,7 @@
 - [EditorConfig for VS Code](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
 - [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
 - [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+- [Prisma](https://marketplace.visualstudio.com/items?itemName=Prisma.prisma)
 
 ### Commit Conventions
 
