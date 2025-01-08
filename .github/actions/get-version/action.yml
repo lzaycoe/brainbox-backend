@@ -4,8 +4,7 @@ runs:
   using: composite
 
   steps:
-    - name: Get version
-      id: get_version
+    - name: Get version from script
       run: |
         wget https://raw.githubusercontent.com/lzaycoe/brainbox-deployment/refs/heads/main/scripts/get-version.sh
         sudo apt-get install jq
