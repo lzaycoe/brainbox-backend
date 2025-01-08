@@ -61,9 +61,9 @@ Examples:
 
 Create a .env file there and add the following environment variables:
 
-| #   | Name | Description | Example                       |
-| --- | ---- | ----------- | ----------------------------- |
-| 1   | ENV  | Environment | `development` or `production` |
+| #   | Name     | Description | Example                       |
+| --- | -------- | ----------- | ----------------------------- |
+| 1   | NODE_ENV | Environment | `development` or `production` |
 
 ---
 
