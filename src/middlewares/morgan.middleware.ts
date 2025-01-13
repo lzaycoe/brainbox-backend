@@ -18,19 +18,19 @@
  *
  *  ======================================================================
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { NextFunction, Request, Response } from 'express';
+import morgan from 'morgan';
 
-import { AppController } from '@/app.controller';
-import { AppService } from '@/app.service';
-import { MorganMiddleware } from '@/middlewares/morgan.middleware';
+@Injectable()
+export class MorganMiddleware implements NestMiddleware {
+	private readonly logger = new Logger(MorganMiddleware.name);
 
-@Module({
-	imports: [],
-	controllers: [AppController],
-	providers: [AppService],
-})
-export class AppModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(MorganMiddleware).forRoutes('*');
+	use(req: Request, res: Response, next: NextFunction) {
+		morgan('dev', {
+			stream: {
+				write: (message: string) => this.logger.log(message.trim()),
+			},
+		})(req, res, next);
 	}
 }
