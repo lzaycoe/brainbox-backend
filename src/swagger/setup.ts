@@ -18,20 +18,29 @@
  *
  *  ======================================================================
  */
-import { NestFactory } from '@nestjs/core';
+import { version } from '../../package.json';
+import { INestApplication } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-import { AppModule } from '@/app.module';
-import { setupSwagger } from '@/swagger/setup';
+export const setupSwagger = (app: INestApplication<any>) => {
+	const config = new DocumentBuilder()
+		.setTitle('brainbox API doumentation')
+		.setDescription('Backend for BrainBox')
+		.setVersion(version)
+		.setLicense(
+			'GPL-3.0 license',
+			'https://github.com/lzaycoe/brainbox-backend/blob/main/LICENSE',
+		)
+		.addBearerAuth()
+		.build();
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-require('module-alias/register');
-
-async function bootstrap() {
-	const app = await NestFactory.create(AppModule);
-
-	// Setup Swagger
-	setupSwagger(app);
-
-	await app.listen(3000);
-}
-bootstrap();
+	const document = SwaggerModule.createDocument(app, config);
+	SwaggerModule.setup('api-docs', app, document, {
+		swaggerOptions: {
+			tagsSorter: 'alpha',
+			operationsSorter: 'method',
+			syntaxHighlight: true,
+			displayRequestDuration: true,
+		},
+	});
+};
