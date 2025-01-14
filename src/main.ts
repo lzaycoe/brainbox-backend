@@ -18,6 +18,7 @@
  *
  *  ======================================================================
  */
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 
@@ -35,7 +36,12 @@ require('module-alias/register');
  * @returns {Promise<void>} A promise that resolves when the application has started.
  */
 async function bootstrap() {
+	const logger = new Logger();
+
 	const app = await NestFactory.create(AppModule);
+
+	// Set global prefix
+	app.setGlobalPrefix('api');
 
 	// Setup cookie parser
 	app.use(cookieParser());
@@ -44,6 +50,8 @@ async function bootstrap() {
 	setupSwagger(app);
 
 	await app.listen(4000);
+
+	logger.log(`Server running on ${await app.getUrl()}`);
 }
 
 bootstrap();
