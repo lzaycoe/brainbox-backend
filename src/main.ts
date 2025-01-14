@@ -19,6 +19,7 @@
  *  ======================================================================
  */
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 
 import { AppModule } from '@/app.module';
 import { setupSwagger } from '@/swagger/setup';
@@ -29,9 +30,12 @@ require('module-alias/register');
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
+	// Setup cookie parser
+	app.use(cookieParser());
+
 	// Setup Swagger
 	setupSwagger(app);
 
-	await app.listen(3000);
+	await app.listen(4000);
 }
 bootstrap();
