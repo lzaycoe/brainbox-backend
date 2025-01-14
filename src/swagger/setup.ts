@@ -22,6 +22,16 @@ import { version } from '../../package.json';
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
+/**
+ * Sets up Swagger documentation for the given NestJS application.
+ *
+ * This function configures Swagger using the `DocumentBuilder` to set the title,
+ * description, version, and license of the API documentation. It also adds
+ * Bearer authentication support. The generated Swagger document is then used
+ * to set up the Swagger module at the specified endpoint (`api-docs`).
+ *
+ * @param app - The NestJS application instance to set up Swagger for.
+ */
 export const setupSwagger = (app: INestApplication<any>) => {
 	const config = new DocumentBuilder()
 		.setTitle('brainbox API doumentation')

@@ -23,6 +23,15 @@ import { ConfigModule } from '@nestjs/config';
 
 import { MorganMiddleware } from '@/middlewares/morgan.middleware';
 
+/**
+ * AppModule is the root module of the application.
+ * It imports the ConfigModule and sets it as a global module.
+ *
+ * @module AppModule
+ *
+ * @class
+ * @implements {NestModule}
+ */
 @Module({
 	imports: [ConfigModule.forRoot({ isGlobal: true })],
 	controllers: [],
