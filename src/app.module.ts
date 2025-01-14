@@ -21,14 +21,12 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-import { AppController } from '@/app.controller';
-import { AppService } from '@/app.service';
 import { MorganMiddleware } from '@/middlewares/morgan.middleware';
 
 @Module({
 	imports: [ConfigModule.forRoot({ isGlobal: true })],
-	controllers: [AppController],
-	providers: [AppService],
+	controllers: [],
+	providers: [],
 })
 export class AppModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {

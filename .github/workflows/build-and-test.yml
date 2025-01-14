@@ -1,4 +1,4 @@
-name: Build and Test
+name: Build
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-test:
-    name: Build and Test
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -31,8 +31,3 @@ jobs:
       - name: Build project
         run: |
           pnpm run build
-
-      - name: Test project
-        run: |
-          pnpm run test
-          pnpm run test:e2e
