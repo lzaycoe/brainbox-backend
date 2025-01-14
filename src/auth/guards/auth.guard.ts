@@ -77,12 +77,17 @@ export class AuthGuard implements CanActivate {
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const request = context.switchToHttp().getRequest();
 		const session = this.extractSessionCookie(request);
-		if (!session) {
-			this.logger.error('Unauthorized access: No Clerk session cookie found');
+		const header = this.extractAuthorizationHeader(request);
+
+		const token = session || header;
+		if (!token) {
+			this.logger.error(
+				'Unauthorized access: No valid session or header token found',
+			);
 			return false;
 		}
 
-		const userId = await this.verifySession(session);
+		const userId = await this.verifySession(token);
 		if (!userId) {
 			return false;
 		}
@@ -104,6 +109,16 @@ export class AuthGuard implements CanActivate {
 	 */
 	private extractSessionCookie(request: any): string | null {
 		return request.cookies?.__session || null;
+	}
+
+	/**
+	 * Extracts the Authorization header from the given request object.
+	 *
+	 * @param request - The request object containing headers.
+	 * @returns The value of the Authorization header if it exists, otherwise null.
+	 */
+	private extractAuthorizationHeader(request: any): string | null {
+		return request.headers?.authorization || null;
 	}
 
 	/**
