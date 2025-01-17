@@ -17,6 +17,7 @@
 		"lint-staged": "lint-staged",
 		"prisma:dev": "prisma migrate dev",
 		"prisma:generate": "prisma generate",
+		"prisma:studio": "prisma studio",
 		"update-deps": "ncu --filter !@types/node"
 	},
 	"dependencies": {
