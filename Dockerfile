@@ -24,7 +24,7 @@ RUN addgroup -S backend && \
 #--------------------------------------------------
 
 FROM base AS base-dev
-RUN npm install -g --ignore-scripts pnpm
+RUN npm install -g --ignore-scripts pnpm prisma
 
 #--------------------------------------------------
 
@@ -33,7 +33,9 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml tsconfig.json tsconfig.build.json ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY ./src ./src
-RUN pnpm run build --webpack
+COPY ./prisma ./prisma
+RUN pnpm run prisma:generate && \
+    pnpm run build --webpack
 
 #--------------------------------------------------
 
@@ -41,7 +43,9 @@ FROM base-dev AS production-dev
 ARG NODE_ENV=production
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
+COPY ./prisma ./prisma
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts && \
+    pnpm run prisma:generate && \
     pnpm cache delete
 
 #--------------------------------------------------
@@ -54,4 +58,4 @@ COPY --from=build /app/dist ./
 COPY package.json ./
 USER backend
 ENTRYPOINT ["node", "main.js"]
-EXPOSE 3000
+EXPOSE 4000

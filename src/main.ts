@@ -18,7 +18,9 @@
  *
  *  ======================================================================
  */
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 
 import { AppModule } from '@/app.module';
 import { setupSwagger } from '@/swagger/setup';
@@ -27,11 +29,22 @@ import { setupSwagger } from '@/swagger/setup';
 require('module-alias/register');
 
 async function bootstrap() {
+	const logger = new Logger();
+
 	const app = await NestFactory.create(AppModule);
+
+	// Set global prefix
+	app.setGlobalPrefix('api');
+
+	// Setup cookie parser
+	app.use(cookieParser());
 
 	// Setup Swagger
 	setupSwagger(app);
 
-	await app.listen(3000);
+	await app.listen(4000);
+
+	logger.log(`Server running on ${await app.getUrl()}`);
 }
+
 bootstrap();

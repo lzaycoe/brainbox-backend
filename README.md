@@ -5,7 +5,6 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/lzaycoe/brainbox-backend)
 ![GitHub License](https://img.shields.io/github/license/lzaycoe/brainbox-backend)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=lzaycoe_brainbox-backend&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=lzaycoe_brainbox-backend)
-[![codecov](https://codecov.io/gh/lzaycoe/brainbox-backend/branch/main/graph/badge.svg?token=PMI1BH1GXY)](https://codecov.io/gh/lzaycoe/brainbox-backend)
 
 > Backend for BrainBox
 
