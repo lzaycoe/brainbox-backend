@@ -18,19 +18,15 @@
  *
  *  ======================================================================
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import argon2 from 'argon2';
 
-import { DomainsModule } from '@/domains/domains.module';
-import { MorganMiddleware } from '@/middlewares/morgan.middleware';
+export const hash = async (plainPassword: string): Promise<string> => {
+	return await argon2.hash(plainPassword);
+};
 
-@Module({
-	imports: [ConfigModule.forRoot({ isGlobal: true }), DomainsModule],
-	controllers: [],
-	providers: [],
-})
-export class AppModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(MorganMiddleware).forRoutes('*');
-	}
-}
+export const verify = async (
+	hashedPassword: string,
+	plainPassword: string,
+): Promise<boolean> => {
+	return await argon2.verify(hashedPassword, plainPassword);
+};

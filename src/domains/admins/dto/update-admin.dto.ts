@@ -18,19 +18,8 @@
  *
  *  ======================================================================
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { PartialType } from '@nestjs/swagger';
 
-import { DomainsModule } from '@/domains/domains.module';
-import { MorganMiddleware } from '@/middlewares/morgan.middleware';
+import { CreateAdminDto } from '@/admins/dto/create-admin.dto';
 
-@Module({
-	imports: [ConfigModule.forRoot({ isGlobal: true }), DomainsModule],
-	controllers: [],
-	providers: [],
-})
-export class AppModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(MorganMiddleware).forRoutes('*');
-	}
-}
+export class UpdateAdminDto extends PartialType(CreateAdminDto) {}

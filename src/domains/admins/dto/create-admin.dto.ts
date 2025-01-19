@@ -18,19 +18,15 @@
  *
  *  ======================================================================
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
 
-import { DomainsModule } from '@/domains/domains.module';
-import { MorganMiddleware } from '@/middlewares/morgan.middleware';
+export class CreateAdminDto {
+	@ApiProperty()
+	@IsNotEmpty()
+	username: string;
 
-@Module({
-	imports: [ConfigModule.forRoot({ isGlobal: true }), DomainsModule],
-	controllers: [],
-	providers: [],
-})
-export class AppModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(MorganMiddleware).forRoutes('*');
-	}
+	@ApiProperty()
+	@IsNotEmpty()
+	password: string;
 }

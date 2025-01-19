@@ -18,19 +18,11 @@
  *
  *  ======================================================================
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { Module } from '@nestjs/common';
 
-import { DomainsModule } from '@/domains/domains.module';
-import { MorganMiddleware } from '@/middlewares/morgan.middleware';
+import { AdminsModule } from '@/admins/admins.module';
 
 @Module({
-	imports: [ConfigModule.forRoot({ isGlobal: true }), DomainsModule],
-	controllers: [],
-	providers: [],
+	imports: [AdminsModule],
 })
-export class AppModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(MorganMiddleware).forRoutes('*');
-	}
-}
+export class DomainsModule {}

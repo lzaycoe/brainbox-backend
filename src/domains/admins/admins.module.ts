@@ -18,19 +18,14 @@
  *
  *  ======================================================================
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { Module } from '@nestjs/common';
 
-import { DomainsModule } from '@/domains/domains.module';
-import { MorganMiddleware } from '@/middlewares/morgan.middleware';
+import { AdminsController } from '@/admins/admins.controller';
+import { AdminsService } from '@/admins/admins.service';
+import { PrismaService } from '@/prisma.service';
 
 @Module({
-	imports: [ConfigModule.forRoot({ isGlobal: true }), DomainsModule],
-	controllers: [],
-	providers: [],
+	controllers: [AdminsController],
+	providers: [AdminsService, PrismaService],
 })
-export class AppModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(MorganMiddleware).forRoutes('*');
-	}
-}
+export class AdminsModule {}
