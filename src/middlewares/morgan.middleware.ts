@@ -22,26 +22,10 @@ import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import morgan from 'morgan';
 
-/**
- * Middleware that integrates Morgan logging with NestJS.
- *
- * This middleware uses Morgan to log HTTP requests in the 'dev' format and
- * redirects the log output to the NestJS logger.
- *
- * @class
- * @implements {NestMiddleware}
- */
 @Injectable()
 export class MorganMiddleware implements NestMiddleware {
 	private readonly logger = new Logger(MorganMiddleware.name);
 
-	/**
-	 * Method that applies the Morgan middleware to log HTTP requests.
-	 *
-	 * @param {Request} req - The incoming HTTP request.
-	 * @param {Response} res - The outgoing HTTP response.
-	 * @param {NextFunction} next - The next middleware function in the request-response cycle.
-	 */
 	use(req: Request, res: Response, next: NextFunction) {
 		morgan('dev', {
 			stream: {

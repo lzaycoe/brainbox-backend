@@ -28,13 +28,6 @@ import { setupSwagger } from '@/swagger/setup';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('module-alias/register');
 
-/**
- * Initializes and starts the NestJS application.
- *
- * @async
- * @function bootstrap
- * @returns {Promise<void>} A promise that resolves when the application has started.
- */
 async function bootstrap() {
 	const logger = new Logger();
 
