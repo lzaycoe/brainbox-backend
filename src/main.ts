@@ -25,9 +25,6 @@ import cookieParser from 'cookie-parser';
 import { AppModule } from '@/app.module';
 import { setupSwagger } from '@/swagger/setup';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-require('module-alias/register');
-
 async function bootstrap() {
 	const logger = new Logger();
 
