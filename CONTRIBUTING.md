@@ -61,9 +61,12 @@ Examples:
 
 Create a .env file there and add the following environment variables:
 
-| #   | Name     | Description | Example                       |
-| --- | -------- | ----------- | ----------------------------- |
-| 1   | NODE_ENV | Environment | `development` or `production` |
+| #   | Name             | Description         | Example                                              |
+| --- | ---------------- | ------------------- | ---------------------------------------------------- |
+| 1   | NODE_ENV         | Environment         | `development` or `production`                        |
+| 2   | DATABASE_URL     | Database URL        | `postgresql://user:password@localhost:5432/brainbox` |
+| 3   | DIRECT_URL       | Database direct URL | `postgresql://user:password@localhost:5432/brainbox` |
+| 4   | CLERK_SECRET_KEY | Clerk secret key    | `clerk_secret_key`                                   |
 
 ---
 
@@ -87,5 +90,6 @@ Create a .env file there and add the following environment variables:
 - Step 4: Run the development server.
 
   ```bash
+  pnpm run prisma:generate
   pnpm run start:dev
   ```
