@@ -6,7 +6,7 @@
 	"private": true,
 	"license": "GPL-3.0 license",
 	"scripts": {
-		"build": "nest build",
+		"build": "nest build --webpack",
 		"format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
 		"prepare": "husky",
 		"start": "nest start",
@@ -27,8 +27,9 @@
 		"@nestjs/platform-express": "10.4.15",
 		"@nestjs/swagger": "8.1.1",
 		"@prisma/client": "6.2.1",
-		"cookie-parser": "1.4.7",
-		"module-alias": "2.2.3",
+		"argon2": "0.41.1",
+		"class-transformer": "0.5.1",
+		"class-validator": "0.14.1",
 		"morgan": "1.10.0",
 		"reflect-metadata": "0.2.2",
 		"rxjs": "7.8.1"
@@ -39,7 +40,6 @@
 		"@nestjs/cli": "10.4.9",
 		"@nestjs/schematics": "10.2.3",
 		"@trivago/prettier-plugin-sort-imports": "5.2.1",
-		"@types/cookie-parser": "1.4.8",
 		"@types/express": "5.0.0",
 		"@types/morgan": "1.9.9",
 		"@types/node": "20.17.0",
@@ -47,7 +47,7 @@
 		"@typescript-eslint/parser": "8.20.0",
 		"eslint": "9.18.0",
 		"eslint-config-prettier": "10.0.1",
-		"eslint-plugin-prettier": "5.2.2",
+		"eslint-plugin-prettier": "5.2.3",
 		"globals": "15.14.0",
 		"husky": "9.1.7",
 		"lint-staged": "15.4.1",
@@ -59,8 +59,5 @@
 		"ts-node": "10.9.2",
 		"tsconfig-paths": "4.2.0",
 		"typescript": "5.7.3"
-	},
-	"_moduleAliases": {
-		"@": "./dist"
 	}
 }

@@ -35,7 +35,7 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY ./src ./src
 COPY ./prisma ./prisma
 RUN pnpm run prisma:generate && \
-    pnpm run build --webpack
+    pnpm run build
 
 #--------------------------------------------------
 
@@ -55,7 +55,6 @@ ARG NODE_ENV=production
 WORKDIR /app
 COPY --from=production-dev /app/node_modules ./node_modules
 COPY --from=build /app/dist ./
-COPY package.json ./
 USER backend
 ENTRYPOINT ["node", "main.js"]
 EXPOSE 4000

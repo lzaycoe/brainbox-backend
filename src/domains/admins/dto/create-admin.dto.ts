@@ -18,39 +18,15 @@
  *
  *  ======================================================================
  */
-import { Logger, ValidationPipe } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { NestFactory } from '@nestjs/core';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
 
-import { AppModule } from '@/app.module';
-import { setupSwagger } from '@/swagger/setup';
+export class CreateAdminDto {
+	@ApiProperty()
+	@IsNotEmpty()
+	username: string;
 
-async function bootstrap() {
-	const logger = new Logger();
-
-	const app = await NestFactory.create(AppModule);
-	const configService = app.get<ConfigService>(ConfigService);
-	const isProduction = configService.get('NODE_ENV') == 'production' || false;
-
-	// Setup logger level
-	app.useLogger(
-		isProduction
-			? ['fatal', 'error', 'warn', 'log']
-			: ['fatal', 'error', 'warn', 'log', 'debug'],
-	);
-
-	// Enable validation pipe
-	app.useGlobalPipes(new ValidationPipe());
-
-	// Set global prefix
-	app.setGlobalPrefix('api');
-
-	// Setup Swagger
-	setupSwagger(app);
-
-	await app.listen(4000);
-
-	logger.log(`Server running on ${await app.getUrl()}`);
+	@ApiProperty()
+	@IsNotEmpty()
+	password: string;
 }
-
-bootstrap();
