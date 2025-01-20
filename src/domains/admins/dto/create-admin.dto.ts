@@ -18,16 +18,15 @@
  *
  *  ======================================================================
  */
-import { Controller, Get } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
 
-import { AppService } from '@/app.service';
+export class CreateAdminDto {
+	@ApiProperty()
+	@IsNotEmpty()
+	username: string;
 
-@Controller()
-export class AppController {
-	constructor(private readonly appService: AppService) {}
-
-	@Get()
-	getHello(): string {
-		return this.appService.getHello();
-	}
+	@ApiProperty()
+	@IsNotEmpty()
+	password: string;
 }

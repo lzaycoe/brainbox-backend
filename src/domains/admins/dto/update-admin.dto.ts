@@ -18,26 +18,8 @@
  *
  *  ======================================================================
  */
-import { Test, TestingModule } from '@nestjs/testing';
+import { PartialType } from '@nestjs/swagger';
 
-import { AppController } from '@/app.controller';
-import { AppService } from '@/app.service';
+import { CreateAdminDto } from '@/admins/dto/create-admin.dto';
 
-describe('AppController', () => {
-	let appController: AppController;
-
-	beforeEach(async () => {
-		const app: TestingModule = await Test.createTestingModule({
-			controllers: [AppController],
-			providers: [AppService],
-		}).compile();
-
-		appController = app.get<AppController>(AppController);
-	});
-
-	describe('root', () => {
-		it('should return "Hello World!"', () => {
-			expect(appController.getHello()).toBe('Hello World!');
-		});
-	});
-});
+export class UpdateAdminDto extends PartialType(CreateAdminDto) {}
