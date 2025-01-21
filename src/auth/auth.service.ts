@@ -18,7 +18,8 @@
  *
  *  ======================================================================
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 import { AdminsService } from '@/admins/admins.service';
 import { verify } from '@/utils/hash.util';
@@ -27,7 +28,10 @@ import { verify } from '@/utils/hash.util';
 export class AuthService {
 	private readonly logger = new Logger(AuthService.name);
 
-	constructor(private readonly adminsService: AdminsService) {}
+	constructor(
+		private readonly adminsService: AdminsService,
+		private readonly jwtService: JwtService,
+	) {}
 
 	async validateAdmin(username: string, password: string) {
 		try {
@@ -54,5 +58,13 @@ export class AuthService {
 
 			return null;
 		}
+	}
+
+	async login(payload: any) {
+		if (typeof payload != 'object' || payload == null) {
+			throw new UnauthorizedException('Invalid payload!');
+		}
+
+		return await this.jwtService.signAsync(payload);
 	}
 }

@@ -18,34 +18,15 @@
  *
  *  ======================================================================
  */
-import {
-	Controller,
-	HttpCode,
-	HttpStatus,
-	Post,
-	Request,
-	UseGuards,
-} from '@nestjs/common';
-import { ApiBody } from '@nestjs/swagger';
+import { registerAs } from '@nestjs/config';
+import { JwtModuleOptions } from '@nestjs/jwt';
 
-import { AuthService } from '@/auth/auth.service';
-import { AdminLoginDto } from '@/auth/dto/auth.admin.dto';
-import { AdminAuthGuard } from '@/auth/guards/admin.guard';
-
-@Controller('auth')
-export class AuthController {
-	constructor(private readonly authService: AuthService) {}
-
-	@UseGuards(AdminAuthGuard)
-	@HttpCode(HttpStatus.OK)
-	@Post('admin/login')
-	@ApiBody({ type: AdminLoginDto })
-	async adminLogin(@Request() req: any): Promise<any> {
-		const token = await this.authService.login({
-			sub: req.user.username,
-			role: 'admin',
-		});
-
-		return { access_token: token };
-	}
-}
+export default registerAs(
+	'jwt',
+	(): JwtModuleOptions => ({
+		secret: process.env.JWT_SECRET,
+		signOptions: {
+			expiresIn: process.env.JWT_EXPIRES || '1d',
+		},
+	}),
+);

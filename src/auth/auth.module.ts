@@ -19,15 +19,23 @@
  *  ======================================================================
  */
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
 import { AuthController } from '@/auth/auth.controller';
 import { AuthService } from '@/auth/auth.service';
 import { AdminStrategy } from '@/auth/strategies/admin.strategy';
+import jwtConfig from '@/configs/jwt.config';
 import { AdminsModule } from '@/domains/admins/admins.module';
 
 @Module({
-	imports: [PassportModule, AdminsModule],
+	imports: [
+		ConfigModule.forFeature(jwtConfig),
+		PassportModule,
+		AdminsModule,
+		JwtModule.registerAsync(jwtConfig.asProvider()),
+	],
 	controllers: [AuthController],
 	providers: [AuthService, AdminStrategy],
 })
