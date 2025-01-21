@@ -18,11 +18,34 @@
  *
  *  ======================================================================
  */
-import { Injectable } from '@nestjs/common';
+import {
+	Controller,
+	HttpCode,
+	HttpStatus,
+	Post,
+	Request,
+	UseGuards,
+} from '@nestjs/common';
+import { ApiBody } from '@nestjs/swagger';
 
-@Injectable()
-export class AppService {
-	getHello(): string {
-		return 'Hello World!';
+import { AuthService } from '@/auth/auth.service';
+import { AdminLoginDto } from '@/auth/dto/auth.admin.dto';
+import { AdminAuthGuard } from '@/auth/guards/admin.guard';
+
+@Controller('auth')
+export class AuthController {
+	constructor(private readonly authService: AuthService) {}
+
+	@UseGuards(AdminAuthGuard)
+	@HttpCode(HttpStatus.OK)
+	@Post('admin/login')
+	@ApiBody({ type: AdminLoginDto })
+	async adminLogin(@Request() req: any): Promise<any> {
+		const token = await this.authService.login({
+			sub: req.user.username,
+			role: 'admin',
+		});
+
+		return { access_token: token };
 	}
 }

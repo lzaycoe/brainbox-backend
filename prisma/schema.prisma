@@ -7,3 +7,17 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
+
+model User {
+  id      Int    @id @default(autoincrement())
+  clerkId String @unique
+}
+
+model Admin {
+  id             Int       @id @default(autoincrement())
+  username       String    @unique
+  hashedPassword String
+  createAt       DateTime  @default(now())
+  updateAt       DateTime  @updatedAt
+  deleteAt       DateTime?
+}

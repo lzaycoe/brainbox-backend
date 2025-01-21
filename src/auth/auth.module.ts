@@ -18,24 +18,25 @@
  *
  *  ======================================================================
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 
-import { AuthModule } from '@/auth/auth.module';
-import { DomainsModule } from '@/domains/domains.module';
-import { MorganMiddleware } from '@/middlewares/morgan.middleware';
+import { AuthController } from '@/auth/auth.controller';
+import { AuthService } from '@/auth/auth.service';
+import { AdminStrategy } from '@/auth/strategies/admin.strategy';
+import jwtConfig from '@/configs/jwt.config';
+import { AdminsModule } from '@/domains/admins/admins.module';
 
 @Module({
 	imports: [
-		ConfigModule.forRoot({ isGlobal: true }),
-		AuthModule,
-		DomainsModule,
+		ConfigModule.forFeature(jwtConfig),
+		PassportModule,
+		AdminsModule,
+		JwtModule.registerAsync(jwtConfig.asProvider()),
 	],
-	controllers: [],
-	providers: [],
+	controllers: [AuthController],
+	providers: [AuthService, AdminStrategy],
 })
-export class AppModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(MorganMiddleware).forRoutes('*');
-	}
-}
+export class AuthModule {}

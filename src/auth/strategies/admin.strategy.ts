@@ -18,28 +18,25 @@
  *
  *  ======================================================================
  */
-import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import * as request from 'supertest';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy } from 'passport-local';
 
-import { AppModule } from '@/app.module';
+import { AuthService } from '@/auth/auth.service';
 
-describe('AppController (e2e)', () => {
-	let app: INestApplication;
+@Injectable()
+export class AdminStrategy extends PassportStrategy(Strategy, 'admin') {
+	constructor(private readonly authService: AuthService) {
+		super();
+	}
 
-	beforeEach(async () => {
-		const moduleFixture: TestingModule = await Test.createTestingModule({
-			imports: [AppModule],
-		}).compile();
+	async validate(username: string, password: string) {
+		const admin = await this.authService.validateAdmin(username, password);
 
-		app = moduleFixture.createNestApplication();
-		await app.init();
-	});
+		if (!admin) {
+			throw new UnauthorizedException();
+		}
 
-	it('/ (GET)', () => {
-		return request(app.getHttpServer())
-			.get('/')
-			.expect(200)
-			.expect('Hello World!');
-	});
-});
+		return admin;
+	}
+}

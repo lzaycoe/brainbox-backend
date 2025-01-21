@@ -21,6 +21,31 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
+/**
+ * The `PrismaService` class extends the `PrismaClient` and implements the `OnModuleInit` interface.
+ * This service is responsible for managing the connection to the Prisma database.
+ *
+ * @class
+ * @extends {PrismaClient}
+ * @implements {OnModuleInit}
+ *
+ * @method onModuleInit
+ * This method is called when the module is initialized. It establishes a connection to the Prisma database.
+ *
+ * @example
+ * ```typescript
+ * import { PrismaService } from './prisma.service';
+ *
+ * @Injectable()
+ * export class AppService {
+ *   constructor(private readonly prismaService: PrismaService) {}
+ *
+ *   async getData() {
+ *     return this.prismaService.user.findMany();
+ *   }
+ * }
+ * ```
+ */
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
 	async onModuleInit() {
