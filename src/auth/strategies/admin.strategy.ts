@@ -27,10 +27,7 @@ import { AuthService } from '@/auth/auth.service';
 @Injectable()
 export class AdminStrategy extends PassportStrategy(Strategy, 'admin') {
 	constructor(private readonly authService: AuthService) {
-		super({
-			usernameField: 'username',
-			passwordField: 'password',
-		});
+		super();
 	}
 
 	async validate(username: string, password: string) {
