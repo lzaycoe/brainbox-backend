@@ -19,14 +19,16 @@
  *  ======================================================================
  */
 import { Module } from '@nestjs/common';
+import { PassportModule } from '@nestjs/passport';
 
-import { AdminsController } from '@/admins/admins.controller';
-import { AdminsService } from '@/admins/admins.service';
-import { PrismaService } from '@/prisma.service';
+import { AuthController } from '@/auth/auth.controller';
+import { AuthService } from '@/auth/auth.service';
+import { AdminStrategy } from '@/auth/strategies/admin.strategy';
+import { AdminsModule } from '@/domains/admins/admins.module';
 
 @Module({
-	controllers: [AdminsController],
-	providers: [AdminsService, PrismaService],
-	exports: [AdminsService],
+	imports: [PassportModule, AdminsModule],
+	controllers: [AuthController],
+	providers: [AuthService, AdminStrategy],
 })
-export class AdminsModule {}
+export class AuthModule {}

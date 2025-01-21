@@ -18,15 +18,17 @@
  *
  *  ======================================================================
  */
-import { Module } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-import { AdminsController } from '@/admins/admins.controller';
-import { AdminsService } from '@/admins/admins.service';
-import { PrismaService } from '@/prisma.service';
+export class AdminLoginDto {
+	@ApiProperty()
+	@IsString()
+	@IsNotEmpty()
+	username: string;
 
-@Module({
-	controllers: [AdminsController],
-	providers: [AdminsService, PrismaService],
-	exports: [AdminsService],
-})
-export class AdminsModule {}
+	@ApiProperty()
+	@IsString()
+	@IsNotEmpty()
+	password: string;
+}

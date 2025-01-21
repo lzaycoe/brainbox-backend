@@ -18,15 +18,28 @@
  *
  *  ======================================================================
  */
-import { Module } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy } from 'passport-local';
 
-import { AdminsController } from '@/admins/admins.controller';
-import { AdminsService } from '@/admins/admins.service';
-import { PrismaService } from '@/prisma.service';
+import { AuthService } from '@/auth/auth.service';
 
-@Module({
-	controllers: [AdminsController],
-	providers: [AdminsService, PrismaService],
-	exports: [AdminsService],
-})
-export class AdminsModule {}
+@Injectable()
+export class AdminStrategy extends PassportStrategy(Strategy, 'admin') {
+	constructor(private readonly authService: AuthService) {
+		super({
+			usernameField: 'username',
+			passwordField: 'password',
+		});
+	}
+
+	async validate(username: string, password: string) {
+		const admin = await this.authService.validateAdmin(username, password);
+
+		if (!admin) {
+			throw new UnauthorizedException();
+		}
+
+		return admin;
+	}
+}

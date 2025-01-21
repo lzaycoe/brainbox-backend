@@ -18,15 +18,41 @@
  *
  *  ======================================================================
  */
-import { Module } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
-import { AdminsController } from '@/admins/admins.controller';
 import { AdminsService } from '@/admins/admins.service';
-import { PrismaService } from '@/prisma.service';
+import { verify } from '@/utils/hash.util';
 
-@Module({
-	controllers: [AdminsController],
-	providers: [AdminsService, PrismaService],
-	exports: [AdminsService],
-})
-export class AdminsModule {}
+@Injectable()
+export class AuthService {
+	private readonly logger = new Logger(AuthService.name);
+
+	constructor(private readonly adminsService: AdminsService) {}
+
+	async validateAdmin(username: string, password: string) {
+		try {
+			const admin =
+				await this.adminsService.findByUsernameWithPassword(username);
+
+			if (!admin) {
+				return null;
+			}
+
+			const isPasswordValid = await verify(admin.hashedPassword, password);
+
+			if (!isPasswordValid) {
+				this.logger.warn(`Invalid password for admin '${username}'`);
+
+				return null;
+			}
+
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { hashedPassword, ...result } = admin;
+			return result;
+		} catch (error: any) {
+			this.logger.error(error.message);
+
+			return null;
+		}
+	}
+}

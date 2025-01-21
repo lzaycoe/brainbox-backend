@@ -18,15 +18,30 @@
  *
  *  ======================================================================
  */
-import { Module } from '@nestjs/common';
+import {
+	Controller,
+	HttpCode,
+	HttpStatus,
+	Post,
+	Request,
+	UseGuards,
+} from '@nestjs/common';
+import { ApiBody } from '@nestjs/swagger';
+import { Request as ExRequest } from 'express';
 
-import { AdminsController } from '@/admins/admins.controller';
-import { AdminsService } from '@/admins/admins.service';
-import { PrismaService } from '@/prisma.service';
+import { AuthService } from '@/auth/auth.service';
+import { AdminLoginDto } from '@/auth/dto/auth.admin.dto';
+import { AdminAuthGuard } from '@/auth/guards/admin.guard';
 
-@Module({
-	controllers: [AdminsController],
-	providers: [AdminsService, PrismaService],
-	exports: [AdminsService],
-})
-export class AdminsModule {}
+@Controller('auth')
+export class AuthController {
+	constructor(private readonly authService: AuthService) {}
+
+	@UseGuards(AdminAuthGuard)
+	@HttpCode(HttpStatus.OK)
+	@Post('admin/login')
+	@ApiBody({ type: AdminLoginDto })
+	async adminLogin(@Request() req: ExRequest): Promise<any> {
+		return req.user;
+	}
+}

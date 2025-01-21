@@ -18,15 +18,8 @@
  *
  *  ======================================================================
  */
-import { Module } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
-import { AdminsController } from '@/admins/admins.controller';
-import { AdminsService } from '@/admins/admins.service';
-import { PrismaService } from '@/prisma.service';
-
-@Module({
-	controllers: [AdminsController],
-	providers: [AdminsService, PrismaService],
-	exports: [AdminsService],
-})
-export class AdminsModule {}
+@Injectable()
+export class AdminAuthGuard extends AuthGuard('admin') {}
