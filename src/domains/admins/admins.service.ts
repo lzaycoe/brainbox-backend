@@ -96,7 +96,7 @@ export class AdminsService {
 		const admin = await this.findByUsernameWithPassword(username);
 
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { hashedPassword, ...result } = admin;
+		const { hashedPassword, refreshToken, ...result } = admin;
 
 		return result;
 	}
