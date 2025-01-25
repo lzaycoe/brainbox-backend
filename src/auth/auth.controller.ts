@@ -41,11 +41,10 @@ export class AuthController {
 	@Post('admin/login')
 	@ApiBody({ type: AdminLoginDto })
 	async adminLogin(@Request() req: any): Promise<any> {
-		const token = await this.authService.login({
-			sub: req.user.username,
-			role: 'admin',
-		});
+		const accessToken = await this.authService.generateAccessTokenForAdmin(
+			req.user.username,
+		);
 
-		return { access_token: token };
+		return { access_token: accessToken };
 	}
 }

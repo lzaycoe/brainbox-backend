@@ -69,10 +69,8 @@ export class AuthService {
 		}
 	}
 
-	async login(payload: any) {
-		if (typeof payload != 'object' || payload == null) {
-			throw new UnauthorizedException('Invalid payload!');
-		}
+	async generateAccessTokenForAdmin(username: string) {
+		const payload = { sub: username, role: 'admin' };
 
 		return await this.jwtService.signAsync(payload, {
 			secret: this.jwtAccessConfiguration.secret,
