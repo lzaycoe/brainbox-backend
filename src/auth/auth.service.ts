@@ -18,10 +18,17 @@
  *
  *  ======================================================================
  */
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+	Inject,
+	Injectable,
+	Logger,
+	UnauthorizedException,
+} from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
 import { AdminsService } from '@/admins/admins.service';
+import jwtAccessConfig from '@/configs/jwt-access.config';
 import { verify } from '@/utils/hash.util';
 
 @Injectable()
@@ -29,6 +36,8 @@ export class AuthService {
 	private readonly logger = new Logger(AuthService.name);
 
 	constructor(
+		@Inject(jwtAccessConfig.KEY)
+		private readonly jwtAccessConfiguration: ConfigType<typeof jwtAccessConfig>,
 		private readonly adminsService: AdminsService,
 		private readonly jwtService: JwtService,
 	) {}
@@ -65,6 +74,9 @@ export class AuthService {
 			throw new UnauthorizedException('Invalid payload!');
 		}
 
-		return await this.jwtService.signAsync(payload);
+		return await this.jwtService.signAsync(payload, {
+			secret: this.jwtAccessConfiguration.secret,
+			expiresIn: this.jwtAccessConfiguration.signOptions?.expiresIn,
+		});
 	}
 }

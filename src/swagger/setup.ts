@@ -32,6 +32,7 @@ export const setupSwagger = (app: INestApplication<any>) => {
 			'https://github.com/lzaycoe/brainbox-backend/blob/main/LICENSE',
 		)
 		.addBearerAuth()
+		.addCookieAuth('refresh_token')
 		.build();
 
 	const document = SwaggerModule.createDocument(app, config);
