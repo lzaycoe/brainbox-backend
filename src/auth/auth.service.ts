@@ -18,11 +18,17 @@
  *
  *  ======================================================================
  */
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+	Inject,
+	Injectable,
+	Logger,
+	UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
 import { AdminsService } from '@/admins/admins.service';
+import { JwtRefreshPayload } from '@/auth/interfaces/jwt-refresh-payload.interface';
 import jwtAccessConfig from '@/configs/jwt-access.config';
 import jwtRefreshConfig from '@/configs/jwt-refresh.config';
 import { verify } from '@/utils/hash.util';
@@ -67,6 +73,18 @@ export class AuthService {
 
 			return null;
 		}
+	}
+
+	async validateRefreshToken(payload: JwtRefreshPayload) {
+		const admin = await this.adminsService.findByUsername(payload.sub);
+
+		const now = Math.floor(Date.now() / 1000);
+
+		if (now <= payload.iat || now >= payload.exp) {
+			throw new UnauthorizedException('Invalid refresh token');
+		}
+
+		return admin;
 	}
 
 	async generateAccessTokenForAdmin(username: string) {

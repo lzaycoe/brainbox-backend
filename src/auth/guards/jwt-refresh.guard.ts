@@ -18,28 +18,8 @@
  *
  *  ======================================================================
  */
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
+import { Injectable } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
-import { AuthController } from '@/auth/auth.controller';
-import { AuthService } from '@/auth/auth.service';
-import { AdminStrategy } from '@/auth/strategies/admin.strategy';
-import { JwtRefreshStrategy } from '@/auth/strategies/jwt-refresh.strategy';
-import jwtAccessConfig from '@/configs/jwt-access.config';
-import jwtRefreshConfig from '@/configs/jwt-refresh.config';
-import { AdminsModule } from '@/domains/admins/admins.module';
-
-@Module({
-	imports: [
-		ConfigModule.forFeature(jwtAccessConfig),
-		ConfigModule.forFeature(jwtRefreshConfig),
-		PassportModule,
-		AdminsModule,
-		JwtModule,
-	],
-	controllers: [AuthController],
-	providers: [AuthService, AdminStrategy, JwtRefreshStrategy],
-})
-export class AuthModule {}
+@Injectable()
+export class JwtRefreshAuthGuard extends AuthGuard('jwt-refresh') {}

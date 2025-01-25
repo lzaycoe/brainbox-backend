@@ -33,6 +33,7 @@ import { Request, Response } from 'express';
 import { AuthService } from '@/auth/auth.service';
 import { AdminLoginDto } from '@/auth/dto/auth.admin.dto';
 import { AdminAuthGuard } from '@/auth/guards/admin.guard';
+import { JwtRefreshAuthGuard } from '@/auth/guards/jwt-refresh.guard';
 import { User } from '@/auth/interfaces/user.interface';
 
 @Controller('auth')
@@ -67,8 +68,6 @@ export class AuthController {
 	async adminLogout(@Req() req: Request, @Res() res: Response): Promise<any> {
 		const refreshToken = req.cookies['refresh_token'];
 
-		console.log(req.cookies);
-
 		if (refreshToken) {
 			res.clearCookie('refresh_token', {
 				httpOnly: true,
@@ -78,5 +77,19 @@ export class AuthController {
 		}
 
 		return res.status(HttpStatus.OK).json({ message: 'Logout successful' });
+	}
+
+	@ApiCookieAuth()
+	@UseGuards(JwtRefreshAuthGuard)
+	@HttpCode(HttpStatus.OK)
+	@Post('admin/refresh')
+	async adminRefresh(@Req() req: Request): Promise<any> {
+		const user = req.user as User;
+
+		const accessToken = await this.authService.generateAccessTokenForAdmin(
+			user.username,
+		);
+
+		return { access_token: accessToken };
 	}
 }
