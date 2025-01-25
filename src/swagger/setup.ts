@@ -18,7 +18,6 @@
  *
  *  ======================================================================
  */
-import { version } from '../../package.json';
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
@@ -26,7 +25,7 @@ export const setupSwagger = (app: INestApplication<any>) => {
 	const config = new DocumentBuilder()
 		.setTitle('brainbox API doumentation')
 		.setDescription('Backend for BrainBox')
-		.setVersion(version)
+		.setVersion(process.env.npm_package_version as string)
 		.setLicense(
 			'GPL-3.0 license',
 			'https://github.com/lzaycoe/brainbox-backend/blob/main/LICENSE',
