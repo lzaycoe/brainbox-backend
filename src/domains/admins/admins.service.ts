@@ -187,4 +187,21 @@ export class AdminsService {
 			throw error;
 		}
 	}
+
+	async saveRefreshToken(username: string, refreshToken: string) {
+		const admin = await this.findByUsernameWithPassword(username);
+
+		const hasedRefreshToken = await hash(refreshToken);
+
+		try {
+			await this.prismaService.admin.update({
+				where: { id: admin.id },
+				data: { refreshToken: hasedRefreshToken },
+			});
+		} catch (error: any) {
+			this.logger.error(error);
+
+			throw error;
+		}
+	}
 }

@@ -18,17 +18,13 @@
  *
  *  ======================================================================
  */
-import {
-	Inject,
-	Injectable,
-	Logger,
-	UnauthorizedException,
-} from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
 import { AdminsService } from '@/admins/admins.service';
 import jwtAccessConfig from '@/configs/jwt-access.config';
+import jwtRefreshConfig from '@/configs/jwt-refresh.config';
 import { verify } from '@/utils/hash.util';
 
 @Injectable()
@@ -38,6 +34,10 @@ export class AuthService {
 	constructor(
 		@Inject(jwtAccessConfig.KEY)
 		private readonly jwtAccessConfiguration: ConfigType<typeof jwtAccessConfig>,
+		@Inject(jwtRefreshConfig.KEY)
+		private readonly jwtRefreshConfiguration: ConfigType<
+			typeof jwtRefreshConfig
+		>,
 		private readonly adminsService: AdminsService,
 		private readonly jwtService: JwtService,
 	) {}
@@ -76,5 +76,18 @@ export class AuthService {
 			secret: this.jwtAccessConfiguration.secret,
 			expiresIn: this.jwtAccessConfiguration.signOptions?.expiresIn,
 		});
+	}
+
+	async generateRefreshTokenForAdmin(username: string) {
+		const payload = { sub: username, role: 'admin' };
+
+		const token = await this.jwtService.signAsync(payload, {
+			secret: this.jwtRefreshConfiguration.secret,
+			expiresIn: this.jwtRefreshConfiguration.signOptions?.expiresIn,
+		});
+
+		this.adminsService.saveRefreshToken(username, token);
+
+		return token;
 	}
 }

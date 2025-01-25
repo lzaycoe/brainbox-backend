@@ -23,14 +23,17 @@ import {
 	HttpCode,
 	HttpStatus,
 	Post,
-	Request,
+	Req,
+	Res,
 	UseGuards,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
+import { Request, Response } from 'express';
 
 import { AuthService } from '@/auth/auth.service';
 import { AdminLoginDto } from '@/auth/dto/auth.admin.dto';
 import { AdminAuthGuard } from '@/auth/guards/admin.guard';
+import { User } from '@/auth/interfaces/user.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -40,11 +43,23 @@ export class AuthController {
 	@HttpCode(HttpStatus.OK)
 	@Post('admin/login')
 	@ApiBody({ type: AdminLoginDto })
-	async adminLogin(@Request() req: any): Promise<any> {
-		const accessToken = await this.authService.generateAccessTokenForAdmin(
-			req.user.username,
-		);
+	async adminLogin(@Req() req: Request, @Res() res: Response): Promise<any> {
+		const user = req.user as User;
 
-		return { access_token: accessToken };
+		const [accessToken, refreshToken] = await Promise.all([
+			this.authService.generateAccessTokenForAdmin(user.username),
+			this.authService.generateRefreshTokenForAdmin(user.username),
+		]);
+
+		const isProduction = process.env.NODE_ENV == 'production';
+
+		res.cookie('refresh_token', refreshToken, {
+			httpOnly: true,
+			sameSite: 'none',
+			secure: isProduction,
+			expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+		});
+
+		return res.json({ access_token: accessToken });
 	}
 }
