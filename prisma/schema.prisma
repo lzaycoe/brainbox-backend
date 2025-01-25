@@ -17,7 +17,6 @@ model Admin {
   id             Int       @id @default(autoincrement())
   username       String    @unique
   hashedPassword String
-  refreshToken   String?
   createAt       DateTime  @default(now())
   updateAt       DateTime  @updatedAt
   deleteAt       DateTime?

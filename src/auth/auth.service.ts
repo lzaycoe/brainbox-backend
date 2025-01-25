@@ -86,8 +86,6 @@ export class AuthService {
 			expiresIn: this.jwtRefreshConfiguration.signOptions?.expiresIn,
 		});
 
-		this.adminsService.saveRefreshToken(username, token);
-
 		return token;
 	}
 }

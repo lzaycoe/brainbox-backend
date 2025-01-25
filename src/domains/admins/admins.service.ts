@@ -96,7 +96,7 @@ export class AdminsService {
 		const admin = await this.findByUsernameWithPassword(username);
 
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { hashedPassword, refreshToken, ...result } = admin;
+		const { hashedPassword, ...result } = admin;
 
 		return result;
 	}
@@ -181,23 +181,6 @@ export class AdminsService {
 
 			this.logger.log(`Admin with id '${id}' deleted`);
 			this.logger.debug('Deleted admin', deletedAdmin);
-		} catch (error: any) {
-			this.logger.error(error);
-
-			throw error;
-		}
-	}
-
-	async saveRefreshToken(username: string, refreshToken: string) {
-		const admin = await this.findByUsernameWithPassword(username);
-
-		const hasedRefreshToken = await hash(refreshToken);
-
-		try {
-			await this.prismaService.admin.update({
-				where: { id: admin.id },
-				data: { refreshToken: hasedRefreshToken },
-			});
 		} catch (error: any) {
 			this.logger.error(error);
 

@@ -27,7 +27,7 @@ import {
 	Res,
 	UseGuards,
 } from '@nestjs/common';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiCookieAuth } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 
 import { AuthService } from '@/auth/auth.service';
@@ -51,15 +51,32 @@ export class AuthController {
 			this.authService.generateRefreshTokenForAdmin(user.username),
 		]);
 
-		const isProduction = process.env.NODE_ENV == 'production';
-
 		res.cookie('refresh_token', refreshToken, {
 			httpOnly: true,
 			sameSite: 'none',
-			secure: isProduction,
+			secure: process.env.NODE_ENV == 'production',
 			expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
 		});
 
 		return res.json({ access_token: accessToken });
+	}
+
+	@ApiCookieAuth()
+	@HttpCode(HttpStatus.OK)
+	@Post('admin/logout')
+	async adminLogout(@Req() req: Request, @Res() res: Response): Promise<any> {
+		const refreshToken = req.cookies['refresh_token'];
+
+		console.log(req.cookies);
+
+		if (refreshToken) {
+			res.clearCookie('refresh_token', {
+				httpOnly: true,
+				sameSite: 'none',
+				secure: process.env.NODE_ENV === 'production',
+			});
+		}
+
+		return res.status(HttpStatus.OK).json({ message: 'Logout successful' });
 	}
 }
