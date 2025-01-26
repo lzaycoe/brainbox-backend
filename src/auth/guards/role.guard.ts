@@ -59,11 +59,10 @@ export class RoleGuard implements CanActivate {
 		const clerkUser = user as User;
 		const userRole = clerkUser.publicMetadata.role;
 
-		switch (userRole) {
-			case 'teacher':
-				return Role.TEACHER;
-			default:
-				return Role.LEARNER;
+		if (userRole == 'teacher') {
+			return Role.TEACHER;
+		} else {
+			return Role.LEARNER;
 		}
 	}
 }
