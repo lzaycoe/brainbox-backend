@@ -27,7 +27,7 @@ import {
 
 import { CreateAdminDto } from '@/admins/dto/create-admin.dto';
 import { UpdateAdminDto } from '@/admins/dto/update-admin.dto';
-import { PrismaService } from '@/prisma.service';
+import { PrismaService } from '@/providers/prisma.service';
 import { hash } from '@/utils/hash.util';
 
 @Injectable()

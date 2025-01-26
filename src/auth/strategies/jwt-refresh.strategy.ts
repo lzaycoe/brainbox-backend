@@ -18,36 +18,38 @@
  *
  *  ======================================================================
  */
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
+import { Request } from 'express';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import { AuthController } from '@/auth/auth.controller';
 import { AuthService } from '@/auth/auth.service';
-import { AdminStrategy } from '@/auth/strategies/admin.strategy';
-import { JwtAccessStrategy } from '@/auth/strategies/jwt-access.strategy';
-import { JwtRefreshStrategy } from '@/auth/strategies/jwt-refresh.strategy';
-import jwtAccessConfig from '@/configs/jwt-access.config';
+import { JwtRefreshPayload } from '@/auth/interfaces/jwt-refresh-payload.interface';
 import jwtRefreshConfig from '@/configs/jwt-refresh.config';
-import { AdminsModule } from '@/domains/admins/admins.module';
-import { ClerkClientProvider } from '@/providers/clerk.service';
 
-@Module({
-	imports: [
-		ConfigModule.forFeature(jwtAccessConfig),
-		ConfigModule.forFeature(jwtRefreshConfig),
-		PassportModule,
-		AdminsModule,
-		JwtModule,
-	],
-	controllers: [AuthController],
-	providers: [
-		AuthService,
-		AdminStrategy,
-		JwtAccessStrategy,
-		JwtRefreshStrategy,
-		ClerkClientProvider,
-	],
-})
-export class AuthModule {}
+@Injectable()
+export class JwtRefreshStrategy extends PassportStrategy(
+	Strategy,
+	'jwt-refresh',
+) {
+	constructor(
+		@Inject(jwtRefreshConfig.KEY)
+		private readonly jwtRefreshConfiguration: ConfigType<
+			typeof jwtRefreshConfig
+		>,
+		private readonly authService: AuthService,
+	) {
+		super({
+			jwtFromRequest: ExtractJwt.fromExtractors([
+				(request: Request) => request.cookies?.refresh_token,
+			]),
+			secretOrKey: jwtRefreshConfiguration.secret,
+			ignoreExpiration: false,
+		});
+	}
+
+	async validate(payload: JwtRefreshPayload) {
+		return this.authService.validateRefreshToken(payload);
+	}
+}

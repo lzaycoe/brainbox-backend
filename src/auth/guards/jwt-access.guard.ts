@@ -18,15 +18,8 @@
  *
  *  ======================================================================
  */
-import { registerAs } from '@nestjs/config';
-import { JwtModuleOptions } from '@nestjs/jwt';
+import { Injectable } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
-export default registerAs(
-	'jwt',
-	(): JwtModuleOptions => ({
-		secret: process.env.JWT_SECRET,
-		signOptions: {
-			expiresIn: process.env.JWT_EXPIRES || '1d',
-		},
-	}),
-);
+@Injectable()
+export class JwtAccessAuthGuard extends AuthGuard('jwt-access') {}
