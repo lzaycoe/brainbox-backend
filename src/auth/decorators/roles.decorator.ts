@@ -18,24 +18,10 @@
  *
  *  ======================================================================
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { SetMetadata } from '@nestjs/common';
 
-import { AuthModule } from '@/auth/auth.module';
-import { DomainsModule } from '@/domains/domains.module';
-import { MorganMiddleware } from '@/middlewares/morgan.middleware';
+import { Role } from '@/auth/enums/role.enum';
 
-@Module({
-	imports: [
-		ConfigModule.forRoot({ isGlobal: true }),
-		AuthModule,
-		DomainsModule,
-	],
-	controllers: [],
-	providers: [],
-})
-export class AppModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(MorganMiddleware).forRoutes('*');
-	}
-}
+export const ROLE_KEY = 'roles';
+export const Roles = (...roles: [Role, ...Role[]]) =>
+	SetMetadata(ROLE_KEY, roles);

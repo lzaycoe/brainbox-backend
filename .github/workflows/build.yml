@@ -1,20 +1,14 @@
-name: Test Coverage
+name: Build
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
-    branches:
-      - dev
+      - feature/*
+      - hotfix/*
 
 jobs:
-  validate:
-    name: Test Coverage
+  build-and-test:
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -37,12 +31,3 @@ jobs:
       - name: Build project
         run: |
           pnpm run build
-
-      - name: Test and coverage
-        run: |
-          pnpm run test:cov
-
-      - name: Upload coverage reports to Codecov with GitHub Action
-        uses: codecov/codecov-action@v5
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

@@ -18,26 +18,19 @@
  *
  *  ======================================================================
  */
-import { Test, TestingModule } from '@nestjs/testing';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { NextFunction, Request, Response } from 'express';
+import morgan from 'morgan';
 
-import { AppController } from '@/app.controller';
-import { AppService } from '@/app.service';
+@Injectable()
+export class MorganMiddleware implements NestMiddleware {
+	private readonly logger = new Logger(MorganMiddleware.name);
 
-describe('AppController', () => {
-	let appController: AppController;
-
-	beforeEach(async () => {
-		const app: TestingModule = await Test.createTestingModule({
-			controllers: [AppController],
-			providers: [AppService],
-		}).compile();
-
-		appController = app.get<AppController>(AppController);
-	});
-
-	describe('root', () => {
-		it('should return "Hello World!"', () => {
-			expect(appController.getHello()).toBe('Hello World!');
-		});
-	});
-});
+	use(req: Request, res: Response, next: NextFunction) {
+		morgan('dev', {
+			stream: {
+				write: (message: string) => this.logger.log(message.trim()),
+			},
+		})(req, res, next);
+	}
+}

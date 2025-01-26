@@ -18,24 +18,25 @@
  *
  *  ======================================================================
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy } from 'passport-local';
 
-import { AuthModule } from '@/auth/auth.module';
-import { DomainsModule } from '@/domains/domains.module';
-import { MorganMiddleware } from '@/middlewares/morgan.middleware';
+import { AuthService } from '@/auth/auth.service';
 
-@Module({
-	imports: [
-		ConfigModule.forRoot({ isGlobal: true }),
-		AuthModule,
-		DomainsModule,
-	],
-	controllers: [],
-	providers: [],
-})
-export class AppModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(MorganMiddleware).forRoutes('*');
+@Injectable()
+export class AdminStrategy extends PassportStrategy(Strategy, 'admin') {
+	constructor(private readonly authService: AuthService) {
+		super();
+	}
+
+	async validate(username: string, password: string) {
+		const admin = await this.authService.validateAdmin(username, password);
+
+		if (!admin) {
+			throw new UnauthorizedException();
+		}
+
+		return admin;
 	}
 }
