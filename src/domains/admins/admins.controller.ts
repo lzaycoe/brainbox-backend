@@ -26,15 +26,24 @@ import {
 	Param,
 	Patch,
 	Post,
+	UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { AdminsService } from '@/admins/admins.service';
 import { CreateAdminDto } from '@/admins/dto/create-admin.dto';
 import { UpdateAdminDto } from '@/admins/dto/update-admin.dto';
+import { Roles } from '@/auth/decorators/roles.decorator';
+import { Role } from '@/auth/enums/role.enum';
+import { JwtAccessAuthGuard } from '@/auth/guards/jwt-access.guard';
+import { RoleGuard } from '@/auth/guards/role.guard';
 
+@ApiBearerAuth()
 @ApiTags('Admins')
 @Controller('admins')
+@Roles(Role.ADMIN)
+@UseGuards(RoleGuard)
+@UseGuards(JwtAccessAuthGuard)
 export class AdminsController {
 	constructor(private readonly adminsService: AdminsService) {}
 

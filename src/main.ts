@@ -21,6 +21,7 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 
 import { AppModule } from '@/app.module';
 import { setupSwagger } from '@/swagger/setup';
@@ -38,6 +39,9 @@ async function bootstrap() {
 			? ['fatal', 'error', 'warn', 'log']
 			: ['fatal', 'error', 'warn', 'log', 'debug'],
 	);
+
+	// Enable cookie parser
+	app.use(cookieParser());
 
 	// Enable validation pipe
 	app.useGlobalPipes(new ValidationPipe());

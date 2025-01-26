@@ -18,9 +18,10 @@
  *
  *  ======================================================================
  */
-import { version } from '../../package.json';
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
+import { version } from '~/package.json';
 
 export const setupSwagger = (app: INestApplication<any>) => {
 	const config = new DocumentBuilder()
@@ -32,6 +33,7 @@ export const setupSwagger = (app: INestApplication<any>) => {
 			'https://github.com/lzaycoe/brainbox-backend/blob/main/LICENSE',
 		)
 		.addBearerAuth()
+		.addCookieAuth('refresh_token')
 		.build();
 
 	const document = SwaggerModule.createDocument(app, config);

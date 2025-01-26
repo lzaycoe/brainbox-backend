@@ -18,24 +18,8 @@
  *
  *  ======================================================================
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
-import { AuthModule } from '@/auth/auth.module';
-import { DomainsModule } from '@/domains/domains.module';
-import { MorganMiddleware } from '@/middlewares/morgan.middleware';
-
-@Module({
-	imports: [
-		ConfigModule.forRoot({ isGlobal: true }),
-		AuthModule,
-		DomainsModule,
-	],
-	controllers: [],
-	providers: [],
-})
-export class AppModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(MorganMiddleware).forRoutes('*');
-	}
-}
+@Injectable()
+export class JwtRefreshAuthGuard extends AuthGuard('jwt-refresh') {}

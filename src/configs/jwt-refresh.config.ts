@@ -18,24 +18,15 @@
  *
  *  ======================================================================
  */
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { registerAs } from '@nestjs/config';
+import { JwtModuleOptions } from '@nestjs/jwt';
 
-import { AuthModule } from '@/auth/auth.module';
-import { DomainsModule } from '@/domains/domains.module';
-import { MorganMiddleware } from '@/middlewares/morgan.middleware';
-
-@Module({
-	imports: [
-		ConfigModule.forRoot({ isGlobal: true }),
-		AuthModule,
-		DomainsModule,
-	],
-	controllers: [],
-	providers: [],
-})
-export class AppModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(MorganMiddleware).forRoutes('*');
-	}
-}
+export default registerAs(
+	'jwt-refresh',
+	(): JwtModuleOptions => ({
+		secret: process.env.JWT_REFRESH_TOKEN_SECRET,
+		signOptions: {
+			expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES,
+		},
+	}),
+);

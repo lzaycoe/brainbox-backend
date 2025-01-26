@@ -27,7 +27,7 @@ import {
 
 import { CreateAdminDto } from '@/admins/dto/create-admin.dto';
 import { UpdateAdminDto } from '@/admins/dto/update-admin.dto';
-import { PrismaService } from '@/prisma.service';
+import { PrismaService } from '@/providers/prisma.service';
 import { hash } from '@/utils/hash.util';
 
 @Injectable()
@@ -93,6 +93,15 @@ export class AdminsService {
 	}
 
 	async findByUsername(username: string): Promise<any> {
+		const admin = await this.findByUsernameWithPassword(username);
+
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { hashedPassword, ...result } = admin;
+
+		return result;
+	}
+
+	async findByUsernameWithPassword(username: string): Promise<any> {
 		const admin = await this.prismaService.admin.findUnique({
 			where: { username: username, deleteAt: null },
 		});
@@ -106,12 +115,7 @@ export class AdminsService {
 		this.logger.log(`Admin with id '${username}' found`);
 		this.logger.debug('Admin', admin);
 
-		return {
-			id: admin.id,
-			username: admin.username,
-			createdAt: admin.createAt,
-			updateAt: admin.updateAt,
-		};
+		return admin;
 	}
 
 	async update(id: number, dto: UpdateAdminDto) {
