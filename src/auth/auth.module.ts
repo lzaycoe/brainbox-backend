@@ -26,10 +26,12 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthController } from '@/auth/auth.controller';
 import { AuthService } from '@/auth/auth.service';
 import { AdminStrategy } from '@/auth/strategies/admin.strategy';
+import { JwtAccessStrategy } from '@/auth/strategies/jwt-access.strategy';
 import { JwtRefreshStrategy } from '@/auth/strategies/jwt-refresh.strategy';
 import jwtAccessConfig from '@/configs/jwt-access.config';
 import jwtRefreshConfig from '@/configs/jwt-refresh.config';
 import { AdminsModule } from '@/domains/admins/admins.module';
+import { ClerkClientProvider } from '@/providers/clerk.service';
 
 @Module({
 	imports: [
@@ -40,6 +42,12 @@ import { AdminsModule } from '@/domains/admins/admins.module';
 		JwtModule,
 	],
 	controllers: [AuthController],
-	providers: [AuthService, AdminStrategy, JwtRefreshStrategy],
+	providers: [
+		AuthService,
+		AdminStrategy,
+		JwtAccessStrategy,
+		JwtRefreshStrategy,
+		ClerkClientProvider,
+	],
 })
 export class AuthModule {}
