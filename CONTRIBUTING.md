@@ -61,17 +61,18 @@ Examples:
 
 Create a .env file there and add the following environment variables:
 
-| #   | Name                      | Description                  | Example values                                       |
-| --- | ------------------------- | ---------------------------- | ---------------------------------------------------- |
-| 1   | NODE_ENV                  | Environment                  | `development` or `production`                        |
-| 2   | DATABASE_URL              | Database URL                 | `postgresql://user:password@localhost:5432/brainbox` |
-| 3   | DIRECT_URL                | Database direct URL          | `postgresql://user:password@localhost:5432/brainbox` |
-| 4   | CLERK_PUBLISHABLE_KEY     | Clerk public API key         | `clerk_public_api_key`                               |
-| 5   | CLERK_SECRET_KEY          | Clerk secret key             | `clerk_secret_key`                                   |
-| 6   | JWT_ACCESS_TOKEN_SECRET   | JWT access token secret key  | `jwt_secret_key`                                     |
-| 7   | JWT_ACCESS_TOKEN_EXPIRES  | JWT access token expires in  | `1d` or `1h` or `1m` or `1s`                         |
-| 8   | JWT_REFRESH_TOKEN_SECRET  | JWT refresh token secret key | `jwt_secret_key`                                     |
-| 9   | JWT_REFRESH_TOKEN_EXPIRES | JWT refresh token expires in | `7d` or `7h` or `7m` or `7s`                         |
+| #   | Name                      | Description                                         | Example values                                       |
+| --- | ------------------------- | --------------------------------------------------- | ---------------------------------------------------- |
+| 1   | NODE_ENV                  | Environment                                         | `development` or `production`                        |
+| 2   | DATABASE_URL              | Database URL                                        | `postgresql://user:password@localhost:5432/brainbox` |
+| 3   | DIRECT_URL                | Database direct URL                                 | `postgresql://user:password@localhost:5432/brainbox` |
+| 4   | CLERK_PUBLISHABLE_KEY     | Clerk public API key                                | `clerk_public_api_key`                               |
+| 5   | CLERK_SECRET_KEY          | Clerk secret key                                    | `clerk_secret_key`                                   |
+| 6   | JWT_ACCESS_TOKEN_SECRET   | JWT access token secret key                         | `jwt_secret_key`                                     |
+| 7   | JWT_ACCESS_TOKEN_EXPIRES  | JWT access token expires in                         | `1d` or `1h` or `1m` or `1s`                         |
+| 8   | JWT_REFRESH_TOKEN_SECRET  | JWT refresh token secret key                        | `jwt_secret_key`                                     |
+| 9   | JWT_REFRESH_TOKEN_EXPIRES | JWT refresh token expires in                        | `7d` or `7h` or `7m` or `7s`                         |
+| 10  | ALLOWED_ORIGINS           | The allowed origins for CORS (separated by commas ) | `http://localhost:3000,http://localhost:3001`        |
 
 ---
 
