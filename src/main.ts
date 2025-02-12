@@ -11,6 +11,7 @@ async function bootstrap() {
 
 	const app = await NestFactory.create(AppModule);
 	const configService = app.get<ConfigService>(ConfigService);
+	const corsConfig = configService.get('cors-config');
 	const isProduction = configService.get('NODE_ENV') == 'production' || false;
 
 	// Setup logger level
@@ -20,14 +21,14 @@ async function bootstrap() {
 			: ['fatal', 'error', 'warn', 'log', 'debug'],
 	);
 
+	// Enable CORS
+	app.enableCors(isProduction ? corsConfig : { origin: '*' });
+
 	// Enable cookie parser
 	app.use(cookieParser());
 
 	// Enable validation pipe
 	app.useGlobalPipes(new ValidationPipe());
-
-	// Set global prefix
-	app.setGlobalPrefix('api');
 
 	// Setup Swagger
 	setupSwagger(app);
