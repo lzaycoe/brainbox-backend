@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { CoursesService } from '@/courses/courses.service';
@@ -17,5 +17,10 @@ export class CoursesController {
 	@Get()
 	async findAll(@Query('page') page: string, @Query('limit') limit: string) {
 		return await this.coursesService.findAll(+page, +limit);
+	}
+
+	@Get(':id')
+	async findOne(@Param('id') id: string) {
+		return await this.coursesService.findOne(+id);
 	}
 }
