@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { CoursesService } from '@/courses/courses.service';
 import { CreateCourseDto } from '@/courses/dto/create-course.dto';
+import { UpdateCourseDto } from '@/courses/dto/update-course.dto';
 
 @ApiTags('Courses')
 @Controller('courses')
@@ -31,5 +32,10 @@ export class CoursesController {
 		@Query('limit') limit: string,
 	) {
 		return await this.coursesService.search(query, +page, +limit);
+	}
+
+	@Put(':id')
+	async update(@Param('id') id: string, @Body() dto: UpdateCourseDto) {
+		return await this.coursesService.update(+id, dto);
 	}
 }

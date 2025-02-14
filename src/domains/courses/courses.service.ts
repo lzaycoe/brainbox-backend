@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import { CreateCourseDto } from '@/courses/dto/create-course.dto';
+import { UpdateCourseDto } from '@/courses/dto/update-course.dto';
 import { PrismaService } from '@/providers/prisma.service';
 
 @Injectable()
@@ -85,6 +86,34 @@ export class CoursesService {
 			this.logger.debug('Courses', courses);
 
 			return courses;
+		} catch (error: any) {
+			this.logger.error(error);
+
+			throw error;
+		}
+	}
+
+	async update(id: number, dto: UpdateCourseDto): Promise<any> {
+		const course = await this.prismaService.course.findUnique({
+			where: { id },
+		});
+
+		if (!course) {
+			this.logger.log(`Course with id '${id}' not found`);
+
+			throw new NotFoundException(`Course with id '${id}' not found`);
+		}
+
+		try {
+			const course = await this.prismaService.course.update({
+				where: { id },
+				data: { ...dto },
+			});
+
+			this.logger.log(`Course with id '${id}' updated`);
+			this.logger.debug('Course', course);
+
+			return course;
 		} catch (error: any) {
 			this.logger.error(error);
 
