@@ -23,4 +23,13 @@ export class CoursesController {
 	async findOne(@Param('id') id: string) {
 		return await this.coursesService.findOne(+id);
 	}
+
+	@Get('/search/:query')
+	async search(
+		@Param('query') query: string,
+		@Query('page') page: string,
+		@Query('limit') limit: string,
+	) {
+		return await this.coursesService.search(query, +page, +limit);
+	}
 }

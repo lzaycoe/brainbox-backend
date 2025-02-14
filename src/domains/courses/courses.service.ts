@@ -26,7 +26,7 @@ export class CoursesService {
 		}
 	}
 
-	async findAll(page: number = 1, limit: number = 2): Promise<any> {
+	async findAll(page: number = 1, limit: number = 10): Promise<any> {
 		try {
 			const skip = (page - 1) * limit;
 			const courses = await this.prismaService.course.findMany({
@@ -46,19 +46,45 @@ export class CoursesService {
 	}
 
 	async findOne(id: number): Promise<any> {
+		const course = await this.prismaService.course.findUnique({
+			where: { id },
+		});
+
+		if (!course) {
+			this.logger.log(`Course with id '${id}' not found`);
+
+			throw new NotFoundException(`Course with id '${id}' not found`);
+		}
+
+		this.logger.log(`Course with id '${id}' found`);
+		this.logger.debug('Course', course);
+
+		return course;
+	}
+
+	async search(
+		query: string,
+		page: number = 1,
+		limit: number = 10,
+	): Promise<any> {
 		try {
-			const course = await this.prismaService.course.findUnique({
-				where: { id },
+			const skip = (page - 1) * limit;
+			const courses = await this.prismaService.course.findMany({
+				where: {
+					OR: [
+						{ title: { contains: query, mode: 'insensitive' } },
+						{ description: { contains: query, mode: 'insensitive' } },
+						{ tag: { contains: query, mode: 'insensitive' } },
+					],
+				},
+				skip,
+				take: limit,
 			});
 
-			if (!course) {
-				throw new NotFoundException(`Course with id '${id}' not found`);
-			}
+			this.logger.log(`${courses.length} courses found`);
+			this.logger.debug('Courses', courses);
 
-			this.logger.log(`Course with id '${id}' found`);
-			this.logger.debug('Course', course);
-
-			return course;
+			return courses;
 		} catch (error: any) {
 			this.logger.error(error);
 
