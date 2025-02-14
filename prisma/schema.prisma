@@ -8,9 +8,15 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum Role {
+  learner
+  teacher
+}
+
 model User {
   id      Int    @id @default(autoincrement())
   clerkId String @unique
+  role    Role   @default(learner)
 }
 
 model Admin {
