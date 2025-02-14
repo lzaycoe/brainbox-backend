@@ -120,4 +120,29 @@ export class CoursesService {
 			throw error;
 		}
 	}
+
+	async delete(id: number): Promise<any> {
+		const course = await this.prismaService.course.findUnique({
+			where: { id },
+		});
+
+		if (!course) {
+			this.logger.log(`Course with id '${id}' not found`);
+
+			throw new NotFoundException(`Course with id '${id}' not found`);
+		}
+
+		try {
+			await this.prismaService.course.delete({
+				where: { id },
+			});
+
+			this.logger.log(`Course with id '${id}' deleted`);
+			return { message: `Course with id '${id}' deleted` };
+		} catch (error: any) {
+			this.logger.error(error);
+
+			throw error;
+		}
+	}
 }
