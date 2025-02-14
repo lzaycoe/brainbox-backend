@@ -22,7 +22,7 @@ export class CreateCourseDto {
 
 	@ApiProperty()
 	@IsIn(['pending', 'approved', 'rejected'])
-	status: string;
+	status: CourseStatus;
 
 	@ApiProperty()
 	@IsNotEmpty()
@@ -31,3 +31,5 @@ export class CreateCourseDto {
 	@ApiProperty()
 	public: boolean;
 }
+
+export type CourseStatus = 'pending' | 'approved' | 'rejected';
