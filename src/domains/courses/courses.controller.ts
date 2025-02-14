@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { CoursesService } from '@/courses/courses.service';
@@ -12,5 +12,10 @@ export class CoursesController {
 	@Post()
 	async create(@Body() dto: CreateCourseDto) {
 		return await this.coursesService.create(dto);
+	}
+
+	@Get()
+	async findAll(@Query('page') page: string, @Query('limit') limit: string) {
+		return await this.coursesService.findAll(+page, +limit);
 	}
 }

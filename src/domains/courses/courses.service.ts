@@ -25,4 +25,23 @@ export class CoursesService {
 			throw error;
 		}
 	}
+
+	async findAll(page: number = 1, limit: number = 2): Promise<any> {
+		try {
+			const skip = (page - 1) * limit;
+			const courses = await this.prismaService.course.findMany({
+				skip,
+				take: limit,
+			});
+
+			this.logger.log(`${courses.length} courses found`);
+			this.logger.debug('Courses', courses);
+
+			return courses;
+		} catch (error: any) {
+			this.logger.error(error);
+
+			throw error;
+		}
+	}
 }
