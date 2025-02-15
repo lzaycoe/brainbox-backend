@@ -14,8 +14,11 @@ export class SessionsService {
 		private readonly coursesService: CoursesService,
 	) {}
 
-	async create(courseId: number, createSessionDto: CreateSessionDto) {
-		const course = this.coursesService.findOne(courseId);
+	async create(
+		courseId: number,
+		createSessionDto: CreateSessionDto,
+	): Promise<any> {
+		const course = await this.coursesService.findOne(courseId);
 
 		if (!course) {
 			throw new NotFoundException(`Course with id ${courseId} not found`);
@@ -39,7 +42,7 @@ export class SessionsService {
 		}
 	}
 
-	async findAll(courseId: number) {
+	async findAll(courseId: number): Promise<any> {
 		const sessions = await this.prismaService.session.findMany({
 			where: {
 				courseId,
@@ -51,7 +54,7 @@ export class SessionsService {
 		return sessions;
 	}
 
-	async findOne(courseId: number, id: number) {
+	async findOne(courseId: number, id: number): Promise<any> {
 		const session = await this.prismaService.session.findUnique({
 			where: {
 				id,
@@ -75,7 +78,7 @@ export class SessionsService {
 		courseId: number,
 		id: number,
 		updateSessionDto: UpdateSessionDto,
-	) {
+	): Promise<any> {
 		const session = await this.prismaService.session.findUnique({
 			where: {
 				id,
@@ -109,7 +112,7 @@ export class SessionsService {
 		}
 	}
 
-	async delete(courseId: number, id: number) {
+	async delete(courseId: number, id: number): Promise<any> {
 		const session = await this.prismaService.session.findUnique({
 			where: {
 				id,
