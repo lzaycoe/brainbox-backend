@@ -5,12 +5,12 @@ import {
 	Get,
 	Param,
 	Post,
-	// Put,
+	Put,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { CreateSessionDto } from '@/courses/sessions/dto/create-session.dto';
-// import { UpdateSessionDto } from '@/courses/sessions/dto/update-session.dto';
+import { UpdateSessionDto } from '@/courses/sessions/dto/update-session.dto';
 import { SessionsService } from '@/courses/sessions/sessions.service';
 
 @ApiTags('Courses')
@@ -36,14 +36,14 @@ export class SessionsController {
 		return this.sessionsService.findOne(+courseId, +id);
 	}
 
-	// @Put(':id')
-	// update(
-	// 	@Param('courseId') courseId: string,
-	// 	@Param('id') id: string,
-	// 	@Body() updateSessionDto: UpdateSessionDto,
-	// ) {
-	// 	return this.sessionsService.update(+courseId, +id, updateSessionDto);
-	// }
+	@Put(':id')
+	update(
+		@Param('courseId') courseId: string,
+		@Param('id') id: string,
+		@Body() updateSessionDto: UpdateSessionDto,
+	) {
+		return this.sessionsService.update(+courseId, +id, updateSessionDto);
+	}
 
 	// @Delete(':id')
 	// delete(@Param('courseId') courseId: string, @Param('id') id: string) {

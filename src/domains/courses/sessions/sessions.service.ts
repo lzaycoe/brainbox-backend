@@ -2,7 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import { CoursesService } from '@/courses/courses.service';
 import { CreateSessionDto } from '@/courses/sessions/dto/create-session.dto';
-// import { UpdateSessionDto } from '@/courses/sessions/dto/update-session.dto';
+import { UpdateSessionDto } from '@/courses/sessions/dto/update-session.dto';
 import { PrismaService } from '@/providers/prisma.service';
 
 @Injectable()
@@ -69,5 +69,43 @@ export class SessionsService {
 		this.logger.debug('Session', session);
 
 		return session;
+	}
+
+	async update(
+		courseId: number,
+		id: number,
+		updateSessionDto: UpdateSessionDto,
+	) {
+		const session = await this.prismaService.session.findUnique({
+			where: {
+				id,
+				courseId,
+			},
+		});
+
+		if (!session) {
+			this.logger.log(`Session with id '${id}' not found`);
+
+			throw new NotFoundException(`Session with id '${id}' not found`);
+		}
+
+		try {
+			const updatedSession = await this.prismaService.session.update({
+				where: {
+					id,
+				},
+				data: {
+					...updateSessionDto,
+				},
+			});
+
+			this.logger.log(`Session with id '${id}' updated`);
+			this.logger.debug('Session', updatedSession);
+
+			return updatedSession;
+		} catch (error) {
+			this.logger.error(error);
+			throw error;
+		}
 	}
 }
