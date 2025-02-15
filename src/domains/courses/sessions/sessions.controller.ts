@@ -1,7 +1,7 @@
 import {
 	Body,
 	Controller,
-	// Delete,
+	Delete,
 	Get,
 	Param,
 	Post,
@@ -45,8 +45,8 @@ export class SessionsController {
 		return this.sessionsService.update(+courseId, +id, updateSessionDto);
 	}
 
-	// @Delete(':id')
-	// delete(@Param('courseId') courseId: string, @Param('id') id: string) {
-	// 	return this.sessionsService.delete(+courseId, +id);
-	// }
+	@Delete(':id')
+	delete(@Param('courseId') courseId: string, @Param('id') id: string) {
+		return this.sessionsService.delete(+courseId, +id);
+	}
 }

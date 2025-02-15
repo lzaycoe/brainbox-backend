@@ -108,4 +108,34 @@ export class SessionsService {
 			throw error;
 		}
 	}
+
+	async delete(courseId: number, id: number) {
+		const session = await this.prismaService.session.findUnique({
+			where: {
+				id,
+				courseId,
+			},
+		});
+
+		if (!session) {
+			this.logger.log(`Session with id '${id}' not found`);
+
+			throw new NotFoundException(`Session with id '${id}' not found`);
+		}
+
+		try {
+			await this.prismaService.session.delete({
+				where: {
+					id,
+				},
+			});
+
+			this.logger.log(`Session with id '${id}' deleted`);
+
+			return { message: `Session with id '${id}' deleted` };
+		} catch (error) {
+			this.logger.error(error);
+			throw error;
+		}
+	}
 }
