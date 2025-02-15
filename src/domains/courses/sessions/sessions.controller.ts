@@ -31,10 +31,10 @@ export class SessionsController {
 		return this.sessionsService.findAll(+courseId);
 	}
 
-	// @Get(':id')
-	// findOne(@Param('courseId') courseId: string, @Param('id') id: string) {
-	// 	return this.sessionsService.findOne(+courseId, +id);
-	// }
+	@Get(':id')
+	findOne(@Param('courseId') courseId: string, @Param('id') id: string) {
+		return this.sessionsService.findOne(+courseId, +id);
+	}
 
 	// @Put(':id')
 	// update(

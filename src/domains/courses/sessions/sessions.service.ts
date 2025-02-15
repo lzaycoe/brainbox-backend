@@ -50,4 +50,24 @@ export class SessionsService {
 
 		return sessions;
 	}
+
+	async findOne(courseId: number, id: number) {
+		const session = await this.prismaService.session.findUnique({
+			where: {
+				id,
+				courseId,
+			},
+		});
+
+		if (!session) {
+			this.logger.log(`Session with id '${id}' not found`);
+
+			throw new NotFoundException(`Session with id '${id}' not found`);
+		}
+
+		this.logger.log(`Session with id '${id}' found`);
+		this.logger.debug('Session', session);
+
+		return session;
+	}
 }
