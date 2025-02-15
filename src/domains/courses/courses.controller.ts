@@ -6,7 +6,6 @@ import {
 	Param,
 	Post,
 	Put,
-	Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -25,22 +24,13 @@ export class CoursesController {
 	}
 
 	@Get()
-	async findAll(@Query('page') page: string, @Query('limit') limit: string) {
-		return await this.coursesService.findAll(+page, +limit);
+	async findAll() {
+		return await this.coursesService.findAll();
 	}
 
 	@Get(':id')
 	async findOne(@Param('id') id: string) {
 		return await this.coursesService.findOne(+id);
-	}
-
-	@Get('/search/:query')
-	async search(
-		@Param('query') query: string,
-		@Query('page') page: string,
-		@Query('limit') limit: string,
-	) {
-		return await this.coursesService.search(query, +page, +limit);
 	}
 
 	@Put(':id')

@@ -27,23 +27,13 @@ export class CoursesService {
 		}
 	}
 
-	async findAll(page: number = 1, limit: number = 10): Promise<any> {
-		try {
-			const skip = (page - 1) * limit;
-			const courses = await this.prismaService.course.findMany({
-				skip,
-				take: limit,
-			});
+	async findAll(): Promise<any> {
+		const courses = await this.prismaService.course.findMany();
 
-			this.logger.log(`${courses.length} courses found`);
-			this.logger.debug('Courses', courses);
+		this.logger.log(`Found ${courses.length} courses`);
+		this.logger.debug('Courses', courses);
 
-			return courses;
-		} catch (error: any) {
-			this.logger.error(error);
-
-			throw error;
-		}
+		return courses;
 	}
 
 	async findOne(id: number): Promise<any> {
@@ -61,36 +51,6 @@ export class CoursesService {
 		this.logger.debug('Course', course);
 
 		return course;
-	}
-
-	async search(
-		query: string,
-		page: number = 1,
-		limit: number = 10,
-	): Promise<any> {
-		try {
-			const skip = (page - 1) * limit;
-			const courses = await this.prismaService.course.findMany({
-				where: {
-					OR: [
-						{ title: { contains: query, mode: 'insensitive' } },
-						{ description: { contains: query, mode: 'insensitive' } },
-						{ tag: { contains: query, mode: 'insensitive' } },
-					],
-				},
-				skip,
-				take: limit,
-			});
-
-			this.logger.log(`${courses.length} courses found`);
-			this.logger.debug('Courses', courses);
-
-			return courses;
-		} catch (error: any) {
-			this.logger.error(error);
-
-			throw error;
-		}
 	}
 
 	async update(id: number, dto: UpdateCourseDto): Promise<any> {
