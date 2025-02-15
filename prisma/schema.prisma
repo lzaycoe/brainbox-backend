@@ -40,10 +40,10 @@ model Course {
   public      Boolean      @default(false)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @default(now()) @updatedAt
-  sessions    Sessions[]
+  session    Session[]
 }
 
-model Sessions {
+model Session {
   id       Int      @id @default(autoincrement())
   courseId Int
   course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
