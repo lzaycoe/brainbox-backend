@@ -13,7 +13,8 @@
 		"paths": {
 			"~/*": ["./*"],
 			"@/*": ["src/*"],
-			"@/admins/*": ["src/domains/admins/*"]
+			"@/admins/*": ["src/domains/admins/*"],
+			"@/courses/*": ["src/domains/courses/*"]
 		},
 		"incremental": true,
 		"skipLibCheck": true,

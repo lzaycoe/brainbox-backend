@@ -21,3 +21,23 @@ model Admin {
   updateAt       DateTime  @updatedAt
   deleteAt       DateTime?
 }
+
+enum CourseStatus {
+  pending
+  approved
+  rejected
+}
+
+model Course {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String?
+  price       Decimal
+  thumbnail   String
+  tag         String?
+  status      CourseStatus @default(pending)
+  teacherId   Int?
+  public      Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
+}
