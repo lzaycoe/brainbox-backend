@@ -2,7 +2,7 @@ import {
 	Body,
 	Controller,
 	// Delete,
-	// Get,
+	Get,
 	Param,
 	Post,
 	// Put,
@@ -26,10 +26,10 @@ export class SessionsController {
 		return this.sessionsService.create(+courseId, createSessionDto);
 	}
 
-	// @Get()
-	// findAll(@Param('courseId') courseId: string) {
-	// 	return this.sessionsService.findAll(+courseId);
-	// }
+	@Get()
+	findAll(@Param('courseId') courseId: string) {
+		return this.sessionsService.findAll(+courseId);
+	}
 
 	// @Get(':id')
 	// findOne(@Param('courseId') courseId: string, @Param('id') id: string) {

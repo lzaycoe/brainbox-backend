@@ -14,7 +14,7 @@ export class SessionsService {
 		private readonly coursesService: CoursesService,
 	) {}
 
-	create(courseId: number, createSessionDto: CreateSessionDto) {
+	async create(courseId: number, createSessionDto: CreateSessionDto) {
 		const course = this.coursesService.findOne(courseId);
 
 		if (!course) {
@@ -22,23 +22,32 @@ export class SessionsService {
 		}
 
 		try {
-			return this.prismaService.session.create({
+			const newSession = await this.prismaService.session.create({
 				data: {
 					courseId,
 					...createSessionDto,
 				},
 			});
+
+			this.logger.log(`Session with id '${newSession.id}' created`);
+			this.logger.debug('Session', newSession);
+
+			return newSession;
 		} catch (error) {
 			this.logger.error(error);
 			throw error;
 		}
+	}
 
-		// findAll(courseId: number) {}
+	async findAll(courseId: number) {
+		const sessions = await this.prismaService.session.findMany({
+			where: {
+				courseId,
+			},
+		});
 
-		// findOne(courseId: number, id: number) {}
+		this.logger.log(`Found ${sessions.length} sessions`);
 
-		// update(courseId: number, id: number, updateSessionDto: UpdateSessionDto) {}
-
-		// delete(courseId: number, id: number) {}
+		return sessions;
 	}
 }
