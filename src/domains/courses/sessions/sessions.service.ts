@@ -1,34 +1,44 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
+import { CoursesService } from '@/courses/courses.service';
 import { CreateSessionDto } from '@/courses/sessions/dto/create-session.dto';
-import { UpdateSessionDto } from '@/courses/sessions/dto/update-session.dto';
+// import { UpdateSessionDto } from '@/courses/sessions/dto/update-session.dto';
 import { PrismaService } from '@/providers/prisma.service';
 
 @Injectable()
 export class SessionsService {
 	private readonly logger = new Logger(SessionsService.name);
 
-	constructor(private readonly prismaService: PrismaService) {}
+	constructor(
+		private readonly prismaService: PrismaService,
+		private readonly coursesService: CoursesService,
+	) {}
 
-	create(createSessionDto: CreateSessionDto) {
-		this.logger.log('This action adds a new session', createSessionDto);
-		return 'This action adds a new session';
-	}
+	create(courseId: number, createSessionDto: CreateSessionDto) {
+		const course = this.coursesService.findOne(courseId);
 
-	findAll() {
-		return `This action returns all sessions`;
-	}
+		if (!course) {
+			throw new NotFoundException(`Course with id ${courseId} not found`);
+		}
 
-	findOne(id: number) {
-		return `This action returns a #${id} session`;
-	}
+		try {
+			return this.prismaService.session.create({
+				data: {
+					courseId,
+					...createSessionDto,
+				},
+			});
+		} catch (error) {
+			this.logger.error(error);
+			throw error;
+		}
 
-	update(id: number, updateSessionDto: UpdateSessionDto) {
-		this.logger.log('This action updates a session', updateSessionDto);
-		return `This action updates a #${id} session`;
-	}
+		// findAll(courseId: number) {}
 
-	remove(id: number) {
-		return `This action removes a #${id} session`;
+		// findOne(courseId: number, id: number) {}
+
+		// update(courseId: number, id: number, updateSessionDto: UpdateSessionDto) {}
+
+		// delete(courseId: number, id: number) {}
 	}
 }
