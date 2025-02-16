@@ -60,7 +60,11 @@ export class LecturesController {
 	}
 
 	@Delete(':id')
-	delete(@Param('id') id: string) {
-		return this.lecturesService.delete(+id);
+	delete(
+		@Param('courseId') courseId: string,
+		@Param('sectionId') sectionId: string,
+		@Param('id') id: string,
+	) {
+		return this.lecturesService.delete(+courseId, +sectionId, +id);
 	}
 }

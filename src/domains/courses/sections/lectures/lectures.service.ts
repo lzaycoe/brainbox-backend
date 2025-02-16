@@ -109,7 +109,24 @@ export class LecturesService {
 		}
 	}
 
-	delete(id: number) {
-		return `This action deletes a #${id} lecture`;
+	async delete(courseId: number, sectionId: number, id: number) {
+		await this.findOne(courseId, sectionId, id);
+
+		try {
+			await this.prismaService.lecture.delete({
+				where: {
+					id,
+				},
+			});
+
+			this.logger.log(`Lecture with id '${id}' deleted`);
+
+			return {
+				message: `Lecture with id '${id}' deleted`,
+			};
+		} catch (error) {
+			this.logger.error(error);
+			throw error;
+		}
 	}
 }
