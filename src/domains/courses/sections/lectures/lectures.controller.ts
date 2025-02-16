@@ -4,8 +4,8 @@ import {
 	Delete,
 	Get,
 	Param,
-	Patch,
 	Post,
+	Put,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -44,9 +44,19 @@ export class LecturesController {
 		return this.lecturesService.findOne(+courseId, +sectionId, +id);
 	}
 
-	@Patch(':id')
-	update(@Param('id') id: string, @Body() updateLectureDto: UpdateLectureDto) {
-		return this.lecturesService.update(+id, updateLectureDto);
+	@Put(':id')
+	update(
+		@Param('courseId') courseId: string,
+		@Param('sectionId') sectionId: string,
+		@Param('id') id: string,
+		@Body() updateLectureDto: UpdateLectureDto,
+	) {
+		return this.lecturesService.update(
+			+courseId,
+			+sectionId,
+			+id,
+			updateLectureDto,
+		);
 	}
 
 	@Delete(':id')

@@ -83,8 +83,30 @@ export class LecturesService {
 		return lecture;
 	}
 
-	update(id: number, updateLectureDto: UpdateLectureDto) {
-		return `This action updates a #${id} ${updateLectureDto} lecture`;
+	async update(
+		courseId: number,
+		sectionId: number,
+		id: number,
+		updateLectureDto: UpdateLectureDto,
+	) {
+		await this.findOne(courseId, sectionId, id);
+
+		try {
+			const updatedLecture = await this.prismaService.lecture.update({
+				where: {
+					id,
+				},
+				data: updateLectureDto,
+			});
+
+			this.logger.log(`Lecture with id '${id}' updated`);
+			this.logger.debug('Lecture', updatedLecture);
+
+			return updatedLecture;
+		} catch (error) {
+			this.logger.error(error);
+			throw error;
+		}
 	}
 
 	delete(id: number) {
