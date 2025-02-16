@@ -13,7 +13,7 @@ import { CreateSectionDto } from '@/courses/sections/dto/create-section.dto';
 import { UpdateSectionDto } from '@/courses/sections/dto/update-section.dto';
 import { SectionsService } from '@/courses/sections/sections.service';
 
-@ApiTags('Courses')
+@ApiTags('Sections')
 @Controller('courses/:courseId/sections')
 export class SectionsController {
 	constructor(private readonly sectionsService: SectionsService) {}
