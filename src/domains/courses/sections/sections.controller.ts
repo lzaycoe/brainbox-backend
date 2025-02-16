@@ -14,7 +14,7 @@ import { UpdateSectionDto } from '@/courses/sections/dto/update-section.dto';
 import { SectionsService } from '@/courses/sections/sections.service';
 
 @ApiTags('Courses')
-@Controller('courses/:courseId/Sections')
+@Controller('courses/:courseId/sections')
 export class SectionsController {
 	constructor(private readonly sectionsService: SectionsService) {}
 

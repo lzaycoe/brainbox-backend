@@ -21,6 +21,8 @@ export class SectionsService {
 		const course = await this.coursesService.findOne(courseId);
 
 		if (!course) {
+			this.logger.error(`Course with id ${courseId} not found`);
+
 			throw new NotFoundException(`Course with id ${courseId} not found`);
 		}
 
