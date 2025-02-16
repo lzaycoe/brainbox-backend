@@ -41,7 +41,7 @@ model Course {
   teacherId   Int?
   public      Boolean      @default(false)
   createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now()) @updatedAt
+  updatedAt   DateTime     @updatedAt
 
   section Section[]
 }
@@ -53,4 +53,28 @@ model Section {
   title    String
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
+
+  lecture Lecture[]
+}
+
+enum LectureType {
+  video
+  file
+  link
+  text
+}
+
+model Lecture {
+  id          Int         @id @default(autoincrement())
+  sectionId   Int
+  section     Section     @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  content     String?
+  type        LectureType @default(video)
+  note        String?
+  attachments String[]
+  canPreview  Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
