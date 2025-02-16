@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 
-export class CreateSessionDto {
+export class CreateSectionDto {
 	@ApiProperty()
 	@IsNotEmpty()
 	title: string;

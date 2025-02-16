@@ -54,15 +54,7 @@ export class CoursesService {
 	}
 
 	async update(id: number, dto: UpdateCourseDto): Promise<any> {
-		const course = await this.prismaService.course.findUnique({
-			where: { id },
-		});
-
-		if (!course) {
-			this.logger.log(`Course with id '${id}' not found`);
-
-			throw new NotFoundException(`Course with id '${id}' not found`);
-		}
+		await this.findOne(id);
 
 		try {
 			const course = await this.prismaService.course.update({
@@ -82,15 +74,7 @@ export class CoursesService {
 	}
 
 	async delete(id: number): Promise<any> {
-		const course = await this.prismaService.course.findUnique({
-			where: { id },
-		});
-
-		if (!course) {
-			this.logger.log(`Course with id '${id}' not found`);
-
-			throw new NotFoundException(`Course with id '${id}' not found`);
-		}
+		await this.findOne(id);
 
 		try {
 			await this.prismaService.course.delete({
