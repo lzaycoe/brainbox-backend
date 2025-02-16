@@ -81,18 +81,7 @@ export class SectionsService {
 		id: number,
 		updateSectionDto: UpdateSectionDto,
 	): Promise<any> {
-		const section = await this.prismaService.section.findUnique({
-			where: {
-				id,
-				courseId,
-			},
-		});
-
-		if (!section) {
-			this.logger.log(`Section with id '${id}' not found`);
-
-			throw new NotFoundException(`Section with id '${id}' not found`);
-		}
+		await this.findOne(courseId, id);
 
 		try {
 			const updatedSection = await this.prismaService.section.update({
@@ -115,18 +104,7 @@ export class SectionsService {
 	}
 
 	async delete(courseId: number, id: number): Promise<any> {
-		const section = await this.prismaService.section.findUnique({
-			where: {
-				id,
-				courseId,
-			},
-		});
-
-		if (!section) {
-			this.logger.log(`Section with id '${id}' not found`);
-
-			throw new NotFoundException(`Section with id '${id}' not found`);
-		}
+		await this.findOne(courseId, id);
 
 		try {
 			await this.prismaService.section.delete({
