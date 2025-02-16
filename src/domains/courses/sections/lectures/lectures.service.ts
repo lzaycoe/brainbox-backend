@@ -45,8 +45,19 @@ export class LecturesService {
 		}
 	}
 
-	findAll() {
-		return `This action returns all lectures`;
+	async findAll(courseId: number, sectionId: number): Promise<any> {
+		const lectures = await this.prismaService.lecture.findMany({
+			where: {
+				sectionId,
+				section: {
+					courseId,
+				},
+			},
+		});
+
+		this.logger.log(`Found ${lectures.length} Lectures`);
+
+		return lectures;
 	}
 
 	findOne(id: number) {

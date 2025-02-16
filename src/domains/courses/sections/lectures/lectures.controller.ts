@@ -28,8 +28,11 @@ export class LecturesController {
 	}
 
 	@Get()
-	findAll() {
-		return this.lecturesService.findAll();
+	findAll(
+		@Param('courseId') courseId: string,
+		@Param('sectionId') sectionId: string,
+	) {
+		return this.lecturesService.findAll(+courseId, +sectionId);
 	}
 
 	@Get(':id')
