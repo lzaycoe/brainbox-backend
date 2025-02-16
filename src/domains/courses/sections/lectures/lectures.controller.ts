@@ -13,7 +13,7 @@ import { CreateLectureDto } from '@/courses/sections/lectures/dto/create-lecture
 import { UpdateLectureDto } from '@/courses/sections/lectures/dto/update-lecture.dto';
 import { LecturesService } from '@/courses/sections/lectures/lectures.service';
 
-@ApiTags('Courses')
+@ApiTags('Lectures')
 @Controller('courses/:courseId/sections/:sectionId/lectures')
 export class LecturesController {
 	constructor(private readonly lecturesService: LecturesService) {}
@@ -36,8 +36,12 @@ export class LecturesController {
 	}
 
 	@Get(':id')
-	findOne(@Param('id') id: string) {
-		return this.lecturesService.findOne(+id);
+	findOne(
+		@Param('courseId') courseId: string,
+		@Param('sectionId') sectionId: string,
+		@Param('id') id: string,
+	) {
+		return this.lecturesService.findOne(+courseId, +sectionId, +id);
 	}
 
 	@Patch(':id')

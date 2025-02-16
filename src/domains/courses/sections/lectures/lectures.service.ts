@@ -60,8 +60,27 @@ export class LecturesService {
 		return lectures;
 	}
 
-	findOne(id: number) {
-		return `This action returns a #${id} lecture`;
+	async findOne(courseId: number, sectionId: number, id: number): Promise<any> {
+		const lecture = await this.prismaService.lecture.findUnique({
+			where: {
+				id,
+				sectionId,
+				section: {
+					courseId,
+				},
+			},
+		});
+
+		if (!lecture) {
+			this.logger.log(`Lecture with id '${id}' not found`);
+
+			throw new NotFoundException(`Lecture with id '${id}' not found`);
+		}
+
+		this.logger.log(`Lecture with id '${id}' found`);
+		this.logger.debug('Lecture', lecture);
+
+		return lecture;
 	}
 
 	update(id: number, updateLectureDto: UpdateLectureDto) {
