@@ -7,11 +7,18 @@ export class CreateCourseDto {
 	title: string;
 
 	@ApiProperty()
+	subtitle: string;
+
+	@ApiProperty()
 	description: string;
 
 	@ApiProperty()
 	@IsNotEmpty()
-	price: number;
+	originPrice: number;
+
+	@ApiProperty()
+	@IsNotEmpty()
+	salePrice: number;
 
 	@ApiProperty()
 	thumbnail: string;
