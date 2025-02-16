@@ -31,23 +31,50 @@ enum CourseStatus {
 model Course {
   id          Int          @id @default(autoincrement())
   title       String
+  subtitle    String?
   description String?
-  price       Decimal
+  originPrice Decimal      @default(0.0)
+  salePrice   Decimal      @default(0.0)
   thumbnail   String
   tag         String?
   status      CourseStatus @default(pending)
   teacherId   Int?
   public      Boolean      @default(false)
   createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now()) @updatedAt
-  session    Session[]
+  updatedAt   DateTime     @updatedAt
+
+  section Section[]
 }
 
-model Session {
+model Section {
   id       Int      @id @default(autoincrement())
   courseId Int
   course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   title    String
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
+
+  lecture Lecture[]
+}
+
+enum LectureType {
+  video
+  file
+  link
+  text
+}
+
+model Lecture {
+  id          Int         @id @default(autoincrement())
+  sectionId   Int
+  section     Section     @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  content     String?
+  type        LectureType @default(video)
+  note        String?
+  attachments String[]
+  canPreview  Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
