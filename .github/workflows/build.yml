@@ -30,4 +30,5 @@ jobs:
 
       - name: Build project
         run: |
+          pnpm run prisma:generate
           pnpm run build
