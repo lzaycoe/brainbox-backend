@@ -31,8 +31,10 @@ enum CourseStatus {
 model Course {
   id          Int          @id @default(autoincrement())
   title       String
+  subtitle    String?
   description String?
-  price       Decimal
+  originPrice Decimal      @default(0.0)
+  salePrice   Decimal      @default(0.0)
   thumbnail   String
   tag         String?
   status      CourseStatus @default(pending)
@@ -40,10 +42,11 @@ model Course {
   public      Boolean      @default(false)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @default(now()) @updatedAt
-  session    Session[]
+
+  section Section[]
 }
 
-model Session {
+model Section {
   id       Int      @id @default(autoincrement())
   courseId Int
   course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
