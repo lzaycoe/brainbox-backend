@@ -9,8 +9,9 @@ datasource db {
 }
 
 model User {
-  id      Int    @id @default(autoincrement())
-  clerkId String @unique
+  id      Int     @id @default(autoincrement())
+  clerkId String  @unique
+  Order   Order[]
 }
 
 model Admin {
@@ -44,6 +45,7 @@ model Course {
   updatedAt   DateTime     @updatedAt
 
   section Section[]
+  Order   Order[]
 }
 
 model Section {
@@ -77,4 +79,46 @@ model Lecture {
   canPreview  Boolean     @default(false)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  userId    Int
+  courseId  Int
+  amount    Decimal     @default(0.0)
+  status    OrderStatus @default(pending)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  deletedAt DateTime?
+  payment   Payment?
+
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
+}
+
+enum OrderStatus {
+  pending
+  paid
+  canceled
+}
+
+model Payment {
+  id            Int           @id @default(autoincrement())
+  orderId       Int           @unique
+  paymentId     String
+  paymentMethod String
+  status        PaymentStatus @default(pending)
+  amount        Decimal       @default(0.0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  paymentUrl    String?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+enum PaymentStatus {
+  pending
+  completed
+  failed
+  canceled
 }
