@@ -9,9 +9,11 @@ datasource db {
 }
 
 model User {
-  id      Int     @id @default(autoincrement())
-  clerkId String  @unique
-  Order   Order[]
+  id      Int    @id @default(autoincrement())
+  clerkId String @unique
+
+  Order  Order[]
+  Course Course[]
 }
 
 model Admin {
@@ -40,6 +42,7 @@ model Course {
   tag         String?
   status      CourseStatus @default(pending)
   teacherId   Int?
+  teacher     User?        @relation(fields: [teacherId], references: [id])
   public      Boolean      @default(false)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -84,16 +87,15 @@ model Lecture {
 model Order {
   id        Int         @id @default(autoincrement())
   userId    Int
+  user      User        @relation(fields: [userId], references: [id])
   courseId  Int
+  course    Course      @relation(fields: [courseId], references: [id])
   amount    Decimal     @default(0.0)
   status    OrderStatus @default(pending)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   deletedAt DateTime?
   payment   Payment?
-
-  user   User   @relation(fields: [userId], references: [id])
-  course Course @relation(fields: [courseId], references: [id])
 }
 
 enum OrderStatus {
@@ -105,6 +107,7 @@ enum OrderStatus {
 model Payment {
   id            Int           @id @default(autoincrement())
   orderId       Int           @unique
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
   paymentId     String
   paymentMethod String
   status        PaymentStatus @default(pending)
@@ -112,8 +115,6 @@ model Payment {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   paymentUrl    String?
-
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 enum PaymentStatus {
