@@ -108,12 +108,10 @@ model Payment {
   id            Int           @id @default(autoincrement())
   orderId       Int           @unique
   order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  paymentId     String
   status        PaymentStatus @default(pending)
   amount        Decimal       @default(0.0)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
-  paymentUrl    String?
 }
 
 enum PaymentStatus {
