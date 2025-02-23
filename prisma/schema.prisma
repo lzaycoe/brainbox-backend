@@ -109,7 +109,6 @@ model Payment {
   orderId       Int           @unique
   order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
   paymentId     String
-  paymentMethod String
   status        PaymentStatus @default(pending)
   amount        Decimal       @default(0.0)
   createdAt     DateTime      @default(now())
