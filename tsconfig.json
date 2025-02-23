@@ -14,7 +14,8 @@
 			"~/*": ["./*"],
 			"@/*": ["src/*"],
 			"@/admins/*": ["src/domains/admins/*"],
-			"@/courses/*": ["src/domains/courses/*"]
+			"@/courses/*": ["src/domains/courses/*"],
+			"@/payments/*": ["src/domains/payments/*"]
 		},
 		"incremental": true,
 		"skipLibCheck": true,
