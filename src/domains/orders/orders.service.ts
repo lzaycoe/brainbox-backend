@@ -1,11 +1,5 @@
-import {
-	ConflictException,
-	Injectable,
-	Logger,
-	NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
-import { CoursesService } from '@/courses/courses.service';
 import { CreateOrderDto } from '@/orders/dto/create-order.dto';
 import { UpdateOrderDto } from '@/orders/dto/update-order.dto';
 import { PrismaService } from '@/providers/prisma.service';
@@ -14,38 +8,13 @@ import { PrismaService } from '@/providers/prisma.service';
 export class OrdersService {
 	private readonly logger = new Logger(OrdersService.name);
 
-	constructor(
-		private prismaService: PrismaService,
-		private readonly coursesService: CoursesService,
-	) {}
+	constructor(private prismaService: PrismaService) {}
 
 	async create(dto: CreateOrderDto) {
-		for (const courseId of dto.courseIds) {
-			const course = await this.coursesService.findOne(courseId);
-			if (!course) {
-				this.logger.log(`Course with id '${courseId}' not found`);
-				throw new NotFoundException(`Course with id '${courseId}' not found`);
-			}
-
-			const existingOrder = await this.prismaService.order.findFirst({
-				where: { userId: dto.userId, courseId },
-				include: { payment: true },
-			});
-
-			if (existingOrder?.payment?.status == 'completed') {
-				const message = `User with id '${dto.userId}' already has a completed order for course with id '${courseId}'`;
-
-				this.logger.log(message);
-
-				throw new ConflictException(message);
-			}
-		}
-
 		try {
 			const newOrder = await this.prismaService.order.create({
 				data: {
 					...dto,
-					courseId: dto.courseIds[0],
 					payment: dto.payment ? { create: dto.payment } : undefined,
 				},
 			});

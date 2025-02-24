@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 
 import { CreatePaymentDto } from '@/payments/dto/create-payment.dto';
 
@@ -8,10 +8,9 @@ export class CreateOrderDto {
 	@IsNotEmpty()
 	userId: number;
 
-	@ApiProperty({ type: [Number] })
-	@IsArray()
+	@ApiProperty()
 	@IsNotEmpty()
-	courseIds: number[];
+	courseId: number;
 
 	@ApiProperty()
 	@IsNotEmpty()
