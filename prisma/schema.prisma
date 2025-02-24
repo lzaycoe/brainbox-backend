@@ -12,8 +12,8 @@ model User {
   id      Int    @id @default(autoincrement())
   clerkId String @unique
 
-  Order  Order[]
-  Course Course[]
+  order  Order[]
+  course Course[]
 }
 
 model Admin {
@@ -48,7 +48,7 @@ model Course {
   updatedAt   DateTime     @updatedAt
 
   section Section[]
-  Order   Order[]
+  order   Order[]
 }
 
 model Section {
@@ -88,15 +88,14 @@ model Order {
   id        Int         @id @default(autoincrement())
   userId    Int
   user      User        @relation(fields: [userId], references: [id])
-  courseIds Int[]
+  courseId  Int
+  course    Course?     @relation(fields: [courseId], references: [id])
   price     Decimal     @default(0.0)
   status    OrderStatus @default(pending)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   deletedAt DateTime?
   payment   Payment?
-  Course    Course?     @relation(fields: [courseId], references: [id])
-  courseId  Int?
 }
 
 enum OrderStatus {
