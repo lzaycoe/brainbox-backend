@@ -24,6 +24,7 @@ export class PaymentsService {
 	async create(dto: CreatePaymentDto) {
 		const order = await this.prismaService.order.findUnique({
 			where: { id: dto.orderId },
+			include: { user: true },
 		});
 
 		if (!order) {
@@ -36,7 +37,23 @@ export class PaymentsService {
 			throw new NotFoundException('Client ID or API Key is not defined');
 		}
 
-		const payload = this.createPayload(dto, +order.price);
+		const courses = await this.prismaService.course.findMany({
+			where: { id: { in: order.courseIds } },
+			select: { id: true, title: true, salePrice: true },
+		});
+
+		if (!courses.length) {
+			this.logger.error(`No courses found for order ${dto.orderId}`);
+			throw new NotFoundException('Courses not found');
+		}
+
+		const items = courses.map((course) => ({
+			name: course.title,
+			quantity: 1,
+			price: Number(course.salePrice),
+		}));
+
+		const payload = this.createPayload(dto.orderId, Number(order.price), items);
 		const checksum = this.generateChecksum(payload);
 		this.logger.debug(`Checksum generated: ${checksum}`);
 
@@ -55,12 +72,11 @@ export class PaymentsService {
 			}
 
 			const responseData = await response.json();
-
 			this.logger.debug('Payment API response:', responseData);
 
 			if (responseData?.data?.checkoutUrl) {
 				await this.prismaService.payment.create({
-					data: { ...dto },
+					data: { orderId: dto.orderId },
 				});
 				return responseData.data.checkoutUrl;
 			} else {
@@ -73,11 +89,11 @@ export class PaymentsService {
 		}
 	}
 
-	private createPayload(dto: CreatePaymentDto, price: number) {
+	private createPayload(orderId: number, price: number, items: any[]) {
 		const payload = {
-			orderCode: dto.orderId,
+			orderCode: orderId,
 			amount: price,
-			description: 'Course Payment',
+			description: 'Payment for courses',
 			cancelUrl: `${process.env.FRONTEND_URL}/payment-failed`,
 			returnUrl: `${process.env.FRONTEND_URL}/payment-success`,
 		};
@@ -85,7 +101,8 @@ export class PaymentsService {
 		const signature = this.createSignature(payload);
 		return {
 			...payload,
-			expiredAt: Math.floor(Date.now() / 1000 + 3600) | 0,
+			items,
+			expiredAt: Math.floor(Date.now() / 1000 + 3600),
 			signature,
 		};
 	}
