@@ -7,10 +7,6 @@ export class CreatePaymentDto {
 	orderId: number;
 
 	@ApiProperty()
-	@IsNotEmpty()
-	amount: number;
-
-	@ApiProperty()
 	@IsOptional()
 	status?: PaymentStatus;
 }
