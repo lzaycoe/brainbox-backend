@@ -155,6 +155,7 @@ export class PaymentsService {
 	}
 
 	async processWebhook(payload: any) {
+		this.logger.debug('Webhook payload:', payload);
 		const { orderCode, status, checksum } = payload;
 
 		const validChecksum = this.verifyChecksum(payload, checksum);
@@ -163,20 +164,59 @@ export class PaymentsService {
 			return { success: false, message: 'Invalid checksum' };
 		}
 
-		try {
-			await this.ordersService.update(orderCode, { status });
+		const order = await this.prismaService.order.findUnique({
+			where: { id: orderCode },
+			include: { payment: true },
+		});
 
-			this.logger.log(`Updated order ${orderCode} status to ${status}`);
-			return { success: true };
-		} catch (error) {
-			this.logger.error(`Failed to update order: ${error.message}`);
-			return { success: false, message: 'Failed to update order' };
+		if (!order) {
+			this.logger.error(`Order ${orderCode} not found`);
+			return { success: false, message: 'Order not found' };
 		}
+
+		let orderStatus: OrderStatus;
+		let paymentStatus: PaymentStatus;
+
+		switch (status) {
+			case 'completed':
+				orderStatus = 'paid';
+				paymentStatus = 'completed';
+				break;
+			case 'failed':
+				orderStatus = 'canceled';
+				paymentStatus = 'failed';
+				break;
+			case 'canceled':
+				orderStatus = 'canceled';
+				paymentStatus = 'canceled';
+				break;
+			default:
+				this.logger.warn(`Unhandled payment status: ${status}`);
+				return { success: false, message: 'Unhandled status' };
+		}
+
+		await this.prismaService.$transaction([
+			this.prismaService.order.update({
+				where: { id: orderCode },
+				data: { status: orderStatus },
+			}),
+			this.prismaService.payment.updateMany({
+				where: { orderId: orderCode },
+				data: { status: paymentStatus },
+			}),
+		]);
+
+		this.logger.log(
+			`Updated order ${orderCode} status to ${orderStatus} and payment to ${paymentStatus}`,
+		);
+
+		return { success: true };
 	}
 
 	private verifyChecksum(payload: any, receivedChecksum: string): boolean {
 		const dataString = Object.entries(payload)
 			.filter(([key]) => key !== 'checksum')
+			.sort(([a], [b]) => a.localeCompare(b))
 			.map(([key, value]) => `${key}=${value}`)
 			.join('|');
 
