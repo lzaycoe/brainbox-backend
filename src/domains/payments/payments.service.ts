@@ -83,7 +83,11 @@ export class PaymentsService {
 		};
 
 		const signature = this.createSignature(payload);
-		return { ...payload, signature };
+		return {
+			...payload,
+			expiredAt: Math.floor(Date.now() / 1000 + 3600) | 0,
+			signature,
+		};
 	}
 
 	private createSignature(payload: Record<string, any>): string {
