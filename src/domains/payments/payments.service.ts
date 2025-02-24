@@ -1,22 +1,21 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import * as crypto from 'crypto';
 
+import payOSConfig from '@/configs/payos.config';
 import { OrdersService } from '@/orders/orders.service';
-import PayOSConfig from '@/payments/config/payos.config';
 import { CreatePaymentDto } from '@/payments/dto/create-payment.dto';
 import { PrismaService } from '@/providers/prisma.service';
 
 @Injectable()
 export class PaymentsService {
 	private readonly logger = new Logger(PaymentsService.name);
-	private readonly baseUrl = PayOSConfig.base_url;
-	private readonly clientId = PayOSConfig.client_id;
-	private readonly apiKey = PayOSConfig.api_key;
-	private readonly checksumKey = PayOSConfig.checksum_key;
 
 	constructor(
 		private prismaService: PrismaService,
 		private readonly ordersService: OrdersService,
+		@Inject(payOSConfig.KEY)
+		private readonly payOSConfiguration: ConfigType<typeof payOSConfig>,
 	) {}
 
 	async create(dto: CreatePaymentDto) {
@@ -30,7 +29,7 @@ export class PaymentsService {
 			throw new NotFoundException('Order not found');
 		}
 
-		if (!this.clientId || !this.apiKey) {
+		if (!this.payOSConfiguration.clientId || !this.payOSConfiguration.apiKey) {
 			this.logger.error('Client ID or API Key is not defined');
 			throw new NotFoundException('Client ID or API Key is not defined');
 		}
@@ -58,11 +57,14 @@ export class PaymentsService {
 		const headers = this.createHeaders();
 
 		try {
-			const response = await fetch(`${this.baseUrl}/v2/payment-requests`, {
-				method: 'POST',
-				headers,
-				body: JSON.stringify({ ...payload, checksum }),
-			});
+			const response = await fetch(
+				`${this.payOSConfiguration.baseURL}/v2/payment-requests`,
+				{
+					method: 'POST',
+					headers,
+					body: JSON.stringify({ ...payload, checksum }),
+				},
+			);
 
 			if (!response.ok) {
 				this.logger.error('Failed to create payment');
@@ -111,37 +113,43 @@ export class PaymentsService {
 			.map(([key, value]) => `${key}=${value}`)
 			.join('&');
 
-		if (!this.checksumKey) {
+		if (!this.payOSConfiguration.checksumKey) {
 			this.logger.error('Checksum key is not defined');
 			throw new NotFoundException('Checksum key is not defined');
 		}
 
 		return crypto
-			.createHmac('sha256', this.checksumKey as crypto.BinaryLike)
+			.createHmac(
+				'sha256',
+				this.payOSConfiguration.checksumKey as crypto.BinaryLike,
+			)
 			.update(dataString)
 			.digest('hex');
 	}
 
 	private createHeaders(): Record<string, string> {
-		if (!this.clientId || !this.apiKey) {
+		if (!this.payOSConfiguration.clientId || !this.payOSConfiguration.apiKey) {
 			this.logger.error('Client ID or API Key is not defined');
 			throw new NotFoundException('Client ID or API Key is not defined');
 		}
 		return {
 			'Content-Type': 'application/json',
-			'X-Client-Id': this.clientId,
-			'X-Api-Key': this.apiKey,
+			'X-Client-Id': this.payOSConfiguration.clientId,
+			'X-Api-Key': this.payOSConfiguration.apiKey,
 		};
 	}
 
 	private generateChecksum(payload: Record<string, any>): string {
 		const dataString = Object.values(payload).join('|');
-		if (!this.checksumKey) {
+		if (!this.payOSConfiguration.checksumKey) {
 			this.logger.error('Checksum key is not defined');
 			throw new NotFoundException('Checksum key is not defined');
 		}
 		return crypto
-			.createHmac('sha256', this.checksumKey as crypto.BinaryLike)
+			.createHmac(
+				'sha256',
+				this.payOSConfiguration.checksumKey as crypto.BinaryLike,
+			)
 			.update(dataString)
 			.digest('hex');
 	}
@@ -173,7 +181,10 @@ export class PaymentsService {
 			.join('|');
 
 		const expectedChecksum = crypto
-			.createHmac('sha256', this.checksumKey as crypto.BinaryLike)
+			.createHmac(
+				'sha256',
+				this.payOSConfiguration.checksumKey as crypto.BinaryLike,
+			)
 			.update(dataString)
 			.digest('hex');
 

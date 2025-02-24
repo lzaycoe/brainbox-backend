@@ -32,13 +32,12 @@ export class OrdersService {
 				include: { payment: true },
 			});
 
-			if (existingOrder?.payment?.status === 'completed') {
-				this.logger.log(
-					`User with id '${dto.userId}' already has a completed order for course with id '${courseId}'`,
-				);
-				throw new ConflictException(
-					`User with id '${dto.userId}' already has a completed order for course with id '${courseId}'`,
-				);
+			if (existingOrder?.payment?.status == 'completed') {
+				const message = `User with id '${dto.userId}' already has a completed order for course with id '${courseId}'`;
+
+				this.logger.log(message);
+
+				throw new ConflictException(message);
 			}
 		}
 
@@ -56,6 +55,7 @@ export class OrdersService {
 			return newOrder;
 		} catch (error: any) {
 			this.logger.error(error);
+
 			throw error;
 		}
 	}
