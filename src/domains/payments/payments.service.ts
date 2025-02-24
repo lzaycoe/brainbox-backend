@@ -4,12 +4,8 @@ import * as crypto from 'crypto';
 
 import payOSConfig from '@/configs/payos.config';
 import { CoursesService } from '@/courses/courses.service';
-import { OrderStatus } from '@/orders/dto/create-order.dto';
 import { OrdersService } from '@/orders/orders.service';
-import {
-	CreatePaymentDto,
-	PaymentStatus,
-} from '@/payments/dto/create-payment.dto';
+import { CreatePaymentDto } from '@/payments/dto/create-payment.dto';
 import { PrismaService } from '@/providers/prisma.service';
 
 @Injectable()
@@ -133,79 +129,49 @@ export class PaymentsService {
 	}
 
 	async processWebhook(payload: any) {
-		this.logger.debug('Webhook payload:', payload);
-		const { orderCode, status, checksum } = payload;
+		this.logger.log('Processing webhook:', payload);
+		const validSignature = this.verifySignature(payload.signature);
 
-		const validChecksum = this.verifyChecksum(payload, checksum);
-		if (!validChecksum) {
-			this.logger.error('Invalid checksum');
-			return { success: false, message: 'Invalid checksum' };
+		if (!validSignature) {
+			this.logger.error('Invalid signature');
+
+			throw new Error('Invalid signature');
 		}
 
-		const order = await this.prismaService.order.findUnique({
-			where: { id: orderCode },
-			include: { payment: true },
-		});
+		const { orderCode, status } = payload;
 
+		const order = await this.ordersService.findOne(orderCode);
 		if (!order) {
-			this.logger.error(`Order ${orderCode} not found`);
-			return { success: false, message: 'Order not found' };
+			throw new Error(`Order with ID ${orderCode} not found`);
 		}
 
-		let orderStatus: OrderStatus;
-		let paymentStatus: PaymentStatus;
-
-		switch (status) {
-			case 'completed':
-				orderStatus = 'paid';
-				paymentStatus = 'completed';
-				break;
-			case 'failed':
-				orderStatus = 'canceled';
-				paymentStatus = 'failed';
-				break;
-			case 'canceled':
-				orderStatus = 'canceled';
-				paymentStatus = 'canceled';
-				break;
-			default:
-				this.logger.warn(`Unhandled payment status: ${status}`);
-				return { success: false, message: 'Unhandled status' };
-		}
-
-		await this.prismaService.$transaction([
-			this.prismaService.order.update({
-				where: { id: orderCode },
-				data: { status: orderStatus },
-			}),
-			this.prismaService.payment.updateMany({
+		if (status === 'paid') {
+			await this.prismaService.payment.update({
 				where: { orderId: orderCode },
-				data: { status: paymentStatus },
-			}),
-		]);
+				data: { status: 'completed' },
+			});
 
-		this.logger.log(
-			`Updated order ${orderCode} status to ${orderStatus} and payment to ${paymentStatus}`,
-		);
+			await this.ordersService.update(orderCode, { status: 'paid' });
+			this.logger.debug(`Order ${orderCode} marked as paid`);
+		} else {
+			await this.prismaService.payment.update({
+				where: { orderId: orderCode },
+				data: { status: 'failed' },
+			});
 
-		return { success: true };
+			await this.ordersService.update(orderCode, { status: 'canceled' });
+			this.logger.debug(`Order ${orderCode} marked as failed`);
+		}
+
+		return 'Webhook processed successfully';
 	}
 
-	private verifyChecksum(payload: any, receivedChecksum: string): boolean {
-		const dataString = Object.entries(payload)
-			.filter(([key]) => key !== 'checksum')
-			.sort(([a], [b]) => a.localeCompare(b))
-			.map(([key, value]) => `${key}=${value}`)
-			.join('|');
+	private verifySignature(payload: any): boolean {
+		const signature = payload.signature;
+		const payloadWithoutSignature = { ...payload };
+		delete payloadWithoutSignature.signature;
 
-		const expectedChecksum = crypto
-			.createHmac(
-				'sha256',
-				this.payOSConfiguration.checksumKey as crypto.BinaryLike,
-			)
-			.update(dataString)
-			.digest('hex');
-
-		return expectedChecksum === receivedChecksum;
+		const calculatedSignature = this.createSignature(payloadWithoutSignature);
+		return signature === calculatedSignature;
 	}
 }
