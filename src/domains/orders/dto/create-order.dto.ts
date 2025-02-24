@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-	IsArray,
-	IsDecimal,
-	IsEnum,
-	IsNotEmpty,
-	IsOptional,
-} from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 
 import { CreatePaymentDto } from '@/payments/dto/create-payment.dto';
 
@@ -20,7 +14,6 @@ export class CreateOrderDto {
 	courseIds: number[];
 
 	@ApiProperty()
-	@IsDecimal()
 	@IsNotEmpty()
 	price: number;
 
