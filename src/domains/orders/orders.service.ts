@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+	ConflictException,
+	Injectable,
+	Logger,
+	NotFoundException,
+} from '@nestjs/common';
 
 import { CoursesService } from '@/courses/courses.service';
 import { CreateOrderDto } from '@/orders/dto/create-order.dto';
@@ -21,6 +26,20 @@ export class OrdersService {
 				this.logger.log(`Course with id '${courseId}' not found`);
 				throw new NotFoundException(`Course with id '${courseId}' not found`);
 			}
+
+			const existingOrder = await this.prismaService.order.findFirst({
+				where: { userId: dto.userId, courseId },
+				include: { payment: true },
+			});
+
+			if (existingOrder?.payment?.status === 'completed') {
+				this.logger.log(
+					`User with id '${dto.userId}' already has a completed order for course with id '${courseId}'`,
+				);
+				throw new ConflictException(
+					`User with id '${dto.userId}' already has a completed order for course with id '${courseId}'`,
+				);
+			}
 		}
 
 		try {
@@ -37,7 +56,6 @@ export class OrdersService {
 			return newOrder;
 		} catch (error: any) {
 			this.logger.error(error);
-
 			throw error;
 		}
 	}
