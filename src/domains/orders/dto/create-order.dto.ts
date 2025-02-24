@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import {
+	IsArray,
+	IsDecimal,
+	IsEnum,
+	IsNotEmpty,
+	IsOptional,
+} from 'class-validator';
 
 import { CreatePaymentDto } from '@/payments/dto/create-payment.dto';
 
@@ -8,18 +14,23 @@ export class CreateOrderDto {
 	@IsNotEmpty()
 	userId: number;
 
-	@ApiProperty()
+	@ApiProperty({ type: [Number] })
+	@IsArray()
 	@IsNotEmpty()
-	courseId: number;
+	courseIds: number[];
 
 	@ApiProperty()
+	@IsDecimal()
 	@IsNotEmpty()
-	amount: number;
+	price: number;
 
-	@ApiProperty()
+	@ApiProperty({ enum: ['pending', 'paid', 'canceled'] })
+	@IsEnum(['pending', 'paid', 'canceled'])
+	@IsOptional()
 	status?: OrderStatus;
 
 	@ApiProperty()
+	@IsOptional()
 	payment?: CreatePaymentDto;
 }
 
