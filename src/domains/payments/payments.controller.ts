@@ -1,43 +1,21 @@
-import {
-	Body,
-	Controller,
-	Delete,
-	Get,
-	Param,
-	Patch,
-	Post,
-} from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { CreatePaymentDto } from '@/payments/dto/create-payment.dto';
-import { UpdatePaymentDto } from '@/payments/dto/update-payment.dto';
 import { PaymentsService } from '@/payments/payments.service';
 
+@ApiTags('Payments')
 @Controller('payments')
 export class PaymentsController {
 	constructor(private readonly paymentsService: PaymentsService) {}
 
 	@Post()
-	create(@Body() createPaymentDto: CreatePaymentDto) {
+	async create(@Body() createPaymentDto: CreatePaymentDto) {
 		return this.paymentsService.create(createPaymentDto);
 	}
 
-	@Get()
-	findAll() {
-		return this.paymentsService.findAll();
-	}
-
-	@Get(':id')
-	findOne(@Param('id') id: string) {
-		return this.paymentsService.findOne(+id);
-	}
-
-	@Patch(':id')
-	update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
-		return this.paymentsService.update(+id, updatePaymentDto);
-	}
-
-	@Delete(':id')
-	remove(@Param('id') id: string) {
-		return this.paymentsService.remove(+id);
+	@Post('webhook')
+	async handleWebhook(@Body() payload: any) {
+		return this.paymentsService.processWebhook(payload);
 	}
 }
