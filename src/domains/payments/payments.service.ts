@@ -1,7 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import * as crypto from 'crypto';
 
-import { CoursesService } from '@/courses/courses.service';
 import { OrdersService } from '@/orders/orders.service';
 import PayOSConfig from '@/payments/config/payos.config';
 import { CreatePaymentDto } from '@/payments/dto/create-payment.dto';
@@ -18,7 +17,6 @@ export class PaymentsService {
 	constructor(
 		private prismaService: PrismaService,
 		private readonly ordersService: OrdersService,
-		private readonly coursesService: CoursesService,
 	) {}
 
 	async create(dto: CreatePaymentDto) {
