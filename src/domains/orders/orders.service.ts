@@ -15,17 +15,19 @@ export class OrdersService {
 	) {}
 
 	async create(dto: CreateOrderDto) {
-		const course = await this.coursesService.findOne(dto.courseId);
-		if (!course) {
-			this.logger.log(`Course with id '${dto.courseId}' not found`);
-			throw new NotFoundException('Course not found');
+		for (const courseId of dto.courseIds) {
+			const course = await this.coursesService.findOne(courseId);
+			if (!course) {
+				this.logger.log(`Course with id '${courseId}' not found`);
+				throw new NotFoundException(`Course with id '${courseId}' not found`);
+			}
 		}
 
 		try {
 			const newOrder = await this.prismaService.order.create({
 				data: {
 					...dto,
-					status: 'pending',
+					courseId: dto.courseIds[0],
 					payment: dto.payment ? { create: dto.payment } : undefined,
 				},
 			});
