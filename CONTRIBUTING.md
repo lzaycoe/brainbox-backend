@@ -73,6 +73,11 @@ Create a .env file there and add the following environment variables:
 | 8   | JWT_REFRESH_TOKEN_SECRET  | JWT refresh token secret key                        | `jwt_secret_key`                                     |
 | 9   | JWT_REFRESH_TOKEN_EXPIRES | JWT refresh token expires in                        | `7d` or `7h` or `7m` or `7s`                         |
 | 10  | ALLOWED_ORIGINS           | The allowed origins for CORS (separated by commas ) | `http://localhost:3000,http://localhost:3001`        |
+| 11  | PAYOS_BASE_URL            | payOS base URL                                      | `https://api-merchant.payos.vn`                      |
+| 12  | PAYOS_CLIENT_ID           | payOS client ID                                     | `payos_client_id`                                    |
+| 13  | PAYOS_API_KEY             | payOS API key                                       | `payos_api_key`                                      |
+| 14  | PAYOS_CHECKSUM_KEY        | payOS checksum key                                  | `payos_checksum_key`                                 |
+| 14  | FRONTEND_URL              | Frontend Url                                        | `http://localhost:3000`                              |
 
 ---
 
