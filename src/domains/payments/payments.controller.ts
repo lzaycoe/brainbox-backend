@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { CreatePaymentDto } from '@/payments/dto/create-payment.dto';
@@ -17,10 +17,5 @@ export class PaymentsController {
 	@Post('webhook')
 	async handleWebhook(@Body() payload: any) {
 		return await this.paymentsService.processWebhook(payload);
-	}
-
-	@Get(':id')
-	async getPaymentInfo(@Param('id') id: string) {
-		return this.paymentsService.getPaymentInfo(+id);
 	}
 }

@@ -129,6 +129,7 @@ export class PaymentsService {
 	}
 
 	async processWebhook(payload: any) {
+		this.logger.debug('Received webhook payload:', payload);
 		const validSignature = this.verifySignature(payload);
 
 		if (!validSignature) {
@@ -137,16 +138,25 @@ export class PaymentsService {
 			throw new Error('Invalid signature');
 		}
 
-		const { orderCode, status } = payload;
+		const { success } = payload;
+
+		const { orderCode } = payload.data;
 
 		this.logger.debug('orderCode:', orderCode);
+
+		if (!orderCode) {
+			this.logger.warn(
+				'Received test webhook payload from PayOS, skipping processing.',
+			);
+			return { message: 'Test webhook received' };
+		}
 
 		const order = await this.ordersService.findOne(orderCode);
 		if (!order) {
 			throw new Error(`Order with ID ${orderCode} not found`);
 		}
 
-		if (status === 'paid') {
+		if (success) {
 			await this.prismaService.payment.update({
 				where: { orderId: orderCode },
 				data: { status: 'completed' },
@@ -177,18 +187,5 @@ export class PaymentsService {
 		this.logger.debug('Calculated signature:', calculatedSignature);
 		this.logger.debug('Received signature:', signature);
 		return signature === calculatedSignature;
-	}
-
-	async getPaymentInfo(orderId: number) {
-		const headers = this.createHeaders();
-
-		const paymentInfo = await fetch(
-			`${this.payOSConfiguration.baseURL}/v2/payment-requests/${orderId}`,
-			{
-				method: 'GET',
-				headers,
-			},
-		);
-		return paymentInfo.json();
 	}
 }
