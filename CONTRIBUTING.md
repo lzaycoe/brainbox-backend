@@ -77,6 +77,7 @@ Create a .env file there and add the following environment variables:
 | 12  | PAYOS_CLIENT_ID           | payOS client ID                                     | `payos_client_id`                                    |
 | 13  | PAYOS_API_KEY             | payOS API key                                       | `payos_api_key`                                      |
 | 14  | PAYOS_CHECKSUM_KEY        | payOS checksum key                                  | `payos_checksum_key`                                 |
+| 14  | FRONTEND_URL              | Frontend Url                                        | `http://localhost:3000`                              |
 
 ---
 
