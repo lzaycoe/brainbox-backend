@@ -11,6 +11,9 @@ datasource db {
 model User {
   id      Int    @id @default(autoincrement())
   clerkId String @unique
+
+  order  Order[]
+  course Course[]
 }
 
 model Admin {
@@ -39,11 +42,13 @@ model Course {
   tag         String?
   status      CourseStatus @default(pending)
   teacherId   Int?
+  teacher     User?        @relation(fields: [teacherId], references: [id])
   public      Boolean      @default(false)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
   section Section[]
+  order   Order[]
 }
 
 model Section {
@@ -77,4 +82,40 @@ model Lecture {
   canPreview  Boolean     @default(false)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  userId    Int
+  user      User        @relation(fields: [userId], references: [id])
+  courseId  Int
+  course    Course?     @relation(fields: [courseId], references: [id])
+  price     Decimal     @default(0.0)
+  status    OrderStatus @default(pending)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  deletedAt DateTime?
+  payment   Payment?
+}
+
+enum OrderStatus {
+  pending
+  paid
+  canceled
+}
+
+model Payment {
+  id        Int           @id @default(autoincrement())
+  orderId   Int           @unique
+  order     Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    PaymentStatus @default(pending)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+enum PaymentStatus {
+  pending
+  completed
+  failed
+  canceled
 }
