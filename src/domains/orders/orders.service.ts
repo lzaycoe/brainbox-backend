@@ -8,7 +8,7 @@ import { PrismaService } from '@/providers/prisma.service';
 export class OrdersService {
 	private readonly logger = new Logger(OrdersService.name);
 
-	constructor(private prismaService: PrismaService) {}
+	constructor(private readonly prismaService: PrismaService) {}
 
 	async create(dto: CreateOrderDto) {
 		try {

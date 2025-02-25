@@ -13,7 +13,7 @@ export class PaymentsService {
 	private readonly logger = new Logger(PaymentsService.name);
 
 	constructor(
-		private prismaService: PrismaService,
+		private readonly prismaService: PrismaService,
 		private readonly ordersService: OrdersService,
 		private readonly coursesService: CoursesService,
 		@Inject(payOSConfig.KEY)
