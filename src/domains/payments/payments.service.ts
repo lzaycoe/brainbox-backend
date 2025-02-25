@@ -42,8 +42,15 @@ export class PaymentsService {
 			},
 		];
 
+		const expiredAt = new Date(Date.now() + 30 * 60 * 1000);
+
 		const headers = this.createHeaders();
-		const payload = this.createPayload(dto.orderId, Number(order.price), items);
+		const payload = this.createPayload(
+			dto.orderId,
+			Number(order.price),
+			items,
+			Math.floor(expiredAt.getTime() / 1000),
+		);
 
 		try {
 			const response = await fetch(
@@ -67,6 +74,13 @@ export class PaymentsService {
 				await this.prismaService.payment.create({
 					data: { orderId: dto.orderId },
 				});
+
+				const timeUntilExpiration = expiredAt.getTime() - Date.now();
+				setTimeout(
+					() => this.checkPaymentStatus(dto.orderId),
+					timeUntilExpiration,
+				);
+
 				return responseData.data.checkoutUrl;
 			} else {
 				this.logger.error('Checkout URL not found in the response');
@@ -90,7 +104,12 @@ export class PaymentsService {
 		};
 	}
 
-	private createPayload(orderId: number, price: number, items: any[]) {
+	private createPayload(
+		orderId: number,
+		price: number,
+		items: any[],
+		expiredAt: number,
+	) {
 		const payload = {
 			orderCode: orderId,
 			amount: price,
@@ -103,7 +122,7 @@ export class PaymentsService {
 		return {
 			...payload,
 			items,
-			expiredAt: Math.floor(Date.now() / 1000 + 3600),
+			expiredAt,
 			signature,
 		};
 	}
@@ -187,5 +206,37 @@ export class PaymentsService {
 		this.logger.debug('Calculated signature:', calculatedSignature);
 		this.logger.debug('Received signature:', signature);
 		return signature === calculatedSignature;
+	}
+
+	private async checkPaymentStatus(orderId: number) {
+		this.logger.log(`Checking payment status for order ${orderId}...`);
+
+		const paymentInfo = await this.getPaymentInfo(orderId);
+		const status = paymentInfo?.data?.status;
+
+		if (status !== 'PAID') {
+			await this.prismaService.payment.update({
+				where: { orderId },
+				data: { status: 'failed' },
+			});
+			await this.ordersService.update(orderId, { status: 'canceled' });
+
+			this.logger.warn(`Payment ${orderId} failed. Order canceled.`);
+		} else {
+			this.logger.log(`Payment ${orderId} successful.`);
+		}
+	}
+
+	async getPaymentInfo(orderId: number) {
+		const headers = this.createHeaders();
+
+		const paymentInfo = await fetch(
+			`${this.payOSConfiguration.baseURL}/v2/payment-requests/${orderId}`,
+			{
+				method: 'GET',
+				headers,
+			},
+		);
+		return paymentInfo.json();
 	}
 }
