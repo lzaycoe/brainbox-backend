@@ -94,9 +94,9 @@ export class PaymentsService {
 		const payload = {
 			orderCode: orderId,
 			amount: price,
-			description: 'Payment for courses',
+			description: 'BrainBox | Course Purchase',
 			cancelUrl: `${process.env.FRONTEND_URL}/payment-failed`,
-			returnUrl: `${process.env.FRONTEND_URL}/payment-success`,
+			returnUrl: `${process.env.FRONTEND_URL}/payment-history`,
 		};
 
 		const signature = this.createSignature(payload);
@@ -129,8 +129,7 @@ export class PaymentsService {
 	}
 
 	async processWebhook(payload: any) {
-		this.logger.log('Processing webhook:', payload);
-		const validSignature = this.verifySignature(payload.signature);
+		const validSignature = this.verifySignature(payload);
 
 		if (!validSignature) {
 			this.logger.error('Invalid signature');
@@ -139,6 +138,8 @@ export class PaymentsService {
 		}
 
 		const { orderCode, status } = payload;
+
+		this.logger.debug('orderCode:', orderCode);
 
 		const order = await this.ordersService.findOne(orderCode);
 		if (!order) {
@@ -168,10 +169,26 @@ export class PaymentsService {
 
 	private verifySignature(payload: any): boolean {
 		const signature = payload.signature;
-		const payloadWithoutSignature = { ...payload };
+		const payloadWithoutSignature = { ...payload.data };
 		delete payloadWithoutSignature.signature;
 
+		this.logger.debug('payloadWithoutSignature data:', payloadWithoutSignature);
 		const calculatedSignature = this.createSignature(payloadWithoutSignature);
+		this.logger.debug('Calculated signature:', calculatedSignature);
+		this.logger.debug('Received signature:', signature);
 		return signature === calculatedSignature;
+	}
+
+	async getPaymentInfo(orderId: number) {
+		const headers = this.createHeaders();
+
+		const paymentInfo = await fetch(
+			`${this.payOSConfiguration.baseURL}/v2/payment-requests/${orderId}`,
+			{
+				method: 'GET',
+				headers,
+			},
+		);
+		return paymentInfo.json();
 	}
 }
