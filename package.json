@@ -1,6 +1,6 @@
 {
 	"name": "brainbox-backend",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"description": "Backend for BrainBox",
 	"author": "lzaycoe (Lazy Code)",
 	"private": true,
