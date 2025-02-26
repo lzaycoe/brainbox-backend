@@ -1,6 +1,7 @@
 import { ClerkClient } from '@clerk/backend';
 import {
 	BadRequestException,
+	ConflictException,
 	Inject,
 	Injectable,
 	Logger,
@@ -11,7 +12,9 @@ import {
 import { Request } from 'express';
 import { Webhook } from 'svix';
 
+import { PayOSService } from '@/payments/payos.service';
 import { PrismaService } from '@/providers/prisma.service';
+import { BecomeATeacherDto } from '@/users/dto/become-a-teacher.dto';
 
 @Injectable()
 export class UsersService {
@@ -19,6 +22,7 @@ export class UsersService {
 
 	constructor(
 		private readonly prismaService: PrismaService,
+		private readonly payOSService: PayOSService,
 		@Inject('ClerkClient')
 		private readonly clerkClient: ClerkClient,
 	) {}
@@ -127,5 +131,62 @@ export class UsersService {
 
 		// Optionally, handle any further processing with the payload data
 		return { success: true, message: 'Webhook received' };
+	}
+
+	async becomeATeacher(becomeATeacherDto: BecomeATeacherDto) {
+		const user = await this.prismaService.user.findUnique({
+			where: { id: becomeATeacherDto.userId },
+		});
+
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		this.logger.log('User found with id: ' + becomeATeacherDto.userId);
+		this.logger.debug(user);
+
+		const items = [
+			{
+				name: 'Register to become a potential teacher of the BrainBox platform.',
+				quantity: 1,
+				price: becomeATeacherDto.price,
+			},
+		];
+
+		const existingPayment = await this.prismaService.payment.findFirst({
+			where: {
+				userId: becomeATeacherDto.userId,
+				courseId: null,
+				status: 'paid',
+			},
+		});
+
+		if (existingPayment) {
+			this.logger.debug(
+				`User ${becomeATeacherDto.userId} has already paid for Become a Teacher`,
+			);
+			throw new ConflictException('User has already paid for Become a Teacher');
+		}
+
+		const newPayment = await this.prismaService.payment.create({
+			data: {
+				userId: becomeATeacherDto.userId,
+				price: becomeATeacherDto.price,
+			},
+		});
+
+		const checkoutUrl = await this.payOSService.createPaymentLink(
+			newPayment.id,
+			Number(newPayment.price),
+			items,
+			'BrainBox Become a Teacher',
+		);
+
+		if (!checkoutUrl) {
+			this.logger.error('Checkout URL not found in the response');
+			throw new Error('Checkout URL not found');
+		}
+
+		return checkoutUrl;
 	}
 }
