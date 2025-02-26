@@ -5,12 +5,13 @@ import payOSConfig from '@/configs/payos.config';
 import { CoursesService } from '@/courses/courses.service';
 import { PaymentsController } from '@/payments/payments.controller';
 import { PaymentsService } from '@/payments/payments.service';
+import { PayOSService } from '@/payments/payos.service';
 import { PrismaService } from '@/providers/prisma.service';
 
 @Module({
 	imports: [ConfigModule.forFeature(payOSConfig)],
 	controllers: [PaymentsController],
-	providers: [PaymentsService, PrismaService, CoursesService],
+	providers: [PaymentsService, PrismaService, CoursesService, PayOSService],
 	exports: [PaymentsService],
 })
 export class PaymentsModule {}
