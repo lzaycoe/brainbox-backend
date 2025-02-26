@@ -16,10 +16,21 @@ export class PayOSService {
 		private readonly payOSConfiguration: ConfigType<typeof payOSConfig>,
 	) {}
 
-	async createPaymentLink(paymentId: number, price: number, items: any[]) {
-		const expiredAt = Math.floor((Date.now() + 30 * 60 * 1000) / 1000); // 30 minutes expiry
+	async createPaymentLink(
+		paymentId: number,
+		price: number,
+		items: any[],
+		description: string = 'BrainBox - Course Purchase',
+	) {
+		const expiredAt = Math.floor((Date.now() + 30 * 60 * 1000) / 1000);
 
-		const payload = this.createPayload(paymentId, price, items, expiredAt);
+		const payload = this.createPayload(
+			paymentId,
+			price,
+			items,
+			expiredAt,
+			description,
+		);
 		const headers = this.createHeaders();
 
 		try {
@@ -106,11 +117,12 @@ export class PayOSService {
 		price: number,
 		items: any[],
 		expiredAt: number,
+		description: string,
 	) {
 		const payload = {
 			orderCode: paymentId,
 			amount: price,
-			description: 'BrainBox - Course Purchase',
+			description,
 			cancelUrl: `${process.env.FRONTEND_URL}/purchase-failed`,
 			returnUrl: `${process.env.FRONTEND_URL}/purchase-history`,
 		};

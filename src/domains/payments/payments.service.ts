@@ -1,5 +1,7 @@
+import { ClerkClient } from '@clerk/backend';
 import {
 	ConflictException,
+	Inject,
 	Injectable,
 	Logger,
 	NotFoundException,
@@ -18,6 +20,8 @@ export class PaymentsService {
 		private readonly prismaService: PrismaService,
 		private readonly coursesService: CoursesService,
 		private readonly payOSService: PayOSService,
+		@Inject('ClerkClient')
+		private readonly clerkClient: ClerkClient,
 	) {}
 
 	async create(dto: CreatePaymentDto) {
@@ -60,21 +64,20 @@ export class PaymentsService {
 
 	async processWebhook(payload: any) {
 		this.logger.debug('Received webhook payload:', payload);
-		const validSignature = await this.payOSService.verifySignature(payload);
 
+		const validSignature = await this.payOSService.verifySignature(payload);
 		if (!validSignature) {
 			this.logger.error('Invalid signature');
-
 			throw new Error('Invalid signature');
 		}
 
-		const { success } = payload;
-
-		const { orderCode, description } = payload.data;
-
+		const {
+			success,
+			data: { orderCode, description },
+		} = payload;
 		this.logger.debug('orderCode:', orderCode);
 
-		if (!orderCode || (orderCode == '123' && description == 'VQRIO123')) {
+		if (!orderCode || (orderCode === '123' && description === 'VQRIO123')) {
 			this.logger.warn(
 				'Received test webhook payload from PayOS, skipping processing.',
 			);
@@ -84,27 +87,30 @@ export class PaymentsService {
 		const payment = await this.prismaService.payment.findUnique({
 			where: { id: orderCode },
 		});
-
 		if (!payment) {
 			throw new Error(`Payment with ID ${orderCode} not found`);
 		}
 
-		if (success) {
-			await this.prismaService.payment.update({
-				where: { id: orderCode },
-				data: { status: 'paid' },
-			});
-
-			this.logger.debug(`Payment ${orderCode} marked as paid`);
-		} else {
-			await this.prismaService.payment.update({
-				where: { id: orderCode },
-				data: { status: 'canceled' },
-			});
-
-			this.logger.debug(`Payment ${orderCode} marked as failed`);
+		if (description === 'BrainBox Become a Teacher') {
+			if (success) {
+				await this.clerkClient.users.updateUser(payment.userId.toString(), {
+					publicMetadata: { role: 'teacher' },
+				});
+			} else {
+				this.logger.warn(
+					`Payment for becoming a teacher failed for user ${payment.userId}`,
+				);
+				return { message: 'Payment failed' };
+			}
 		}
 
+		const status = success ? 'paid' : 'canceled';
+		await this.prismaService.payment.update({
+			where: { id: orderCode },
+			data: { status },
+		});
+
+		this.logger.debug(`Payment ${orderCode} marked as ${status}`);
 		return 'Webhook processed successfully';
 	}
 
