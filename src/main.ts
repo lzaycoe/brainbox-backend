@@ -9,7 +9,7 @@ import { setupSwagger } from '@/swagger/setup';
 async function bootstrap() {
 	const logger = new Logger();
 
-	const app = await NestFactory.create(AppModule);
+	const app = await NestFactory.create(AppModule, { rawBody: true });
 	const configService = app.get<ConfigService>(ConfigService);
 	const corsConfig = configService.get('cors-config');
 	const isProduction = configService.get('NODE_ENV') == 'production' || false;
