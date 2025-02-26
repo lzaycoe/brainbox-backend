@@ -65,17 +65,15 @@ export class PaymentsService {
 	async processWebhook(payload: any) {
 		this.logger.debug('Received webhook payload:', payload);
 
-		const validSignature = await this.payOSService.verifySignature(payload);
-		if (!validSignature) {
+		if (!(await this.payOSService.verifySignature(payload))) {
 			this.logger.error('Invalid signature');
 			throw new Error('Invalid signature');
 		}
 
-		const {
-			success,
-			data: { orderCode, description },
-		} = payload;
-		this.logger.debug('orderCode:', orderCode);
+		const orderCode = payload?.data?.orderCode;
+		const description = payload?.data?.description;
+
+		this.logger.debug(`Processing orderCode: ${orderCode}`);
 
 		if (!orderCode || (orderCode === '123' && description === 'VQRIO123')) {
 			this.logger.warn(
@@ -86,29 +84,28 @@ export class PaymentsService {
 
 		const payment = await this.prismaService.payment.findUnique({
 			where: { id: orderCode },
+			select: { id: true, userId: true },
 		});
 		if (!payment) {
+			this.logger.error(`Payment with ID ${orderCode} not found`);
 			throw new Error(`Payment with ID ${orderCode} not found`);
 		}
 
-		if (description === 'BrainBox Become a Teacher') {
-			if (success) {
-				await this.clerkClient.users.updateUser(payment.userId.toString(), {
-					publicMetadata: { role: 'teacher' },
-				});
-			} else {
-				this.logger.warn(
-					`Payment for becoming a teacher failed for user ${payment.userId}`,
-				);
-				return { message: 'Payment failed' };
-			}
-		}
+		const isBecomeTeacher = description === 'BrainBox Become a Teacher';
+		const updateRolePromise =
+			isBecomeTeacher && payload.success
+				? this.clerkClient.users.updateUser(payment.userId.toString(), {
+						publicMetadata: { role: 'teacher' },
+					})
+				: Promise.resolve();
 
-		const status = success ? 'paid' : 'canceled';
-		await this.prismaService.payment.update({
+		const status = payload.success ? 'paid' : 'canceled';
+		const updatePaymentPromise = this.prismaService.payment.update({
 			where: { id: orderCode },
 			data: { status },
 		});
+
+		await Promise.all([updateRolePromise, updatePaymentPromise]);
 
 		this.logger.debug(`Payment ${orderCode} marked as ${status}`);
 		return 'Webhook processed successfully';
