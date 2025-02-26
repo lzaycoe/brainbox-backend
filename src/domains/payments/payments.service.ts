@@ -159,11 +159,11 @@ export class PaymentsService {
 
 		const { success } = payload;
 
-		const { orderCode } = payload.data;
+		const { orderCode, description } = payload.data;
 
 		this.logger.debug('orderCode:', orderCode);
 
-		if (!orderCode) {
+		if (!orderCode || (orderCode == '123' && description == 'VQRIO123')) {
 			this.logger.warn(
 				'Received test webhook payload from PayOS, skipping processing.',
 			);
