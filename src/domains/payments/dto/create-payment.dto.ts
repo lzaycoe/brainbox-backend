@@ -7,7 +7,7 @@ export class CreatePaymentDto {
 	userId: number;
 
 	@ApiProperty()
-	@IsNotEmpty()
+	@IsOptional()
 	courseId: number;
 
 	@ApiProperty()
