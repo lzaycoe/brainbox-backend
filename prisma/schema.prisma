@@ -12,8 +12,8 @@ model User {
   id      Int    @id @default(autoincrement())
   clerkId String @unique
 
-  order  Order[]
-  course Course[]
+  payment Payment[]
+  course  Course[]
 }
 
 model Admin {
@@ -48,7 +48,7 @@ model Course {
   updatedAt   DateTime     @updatedAt
 
   section Section[]
-  order   Order[]
+  payment Payment[]
 }
 
 model Section {
@@ -84,30 +84,13 @@ model Lecture {
   updatedAt   DateTime    @updatedAt
 }
 
-model Order {
-  id        Int         @id @default(autoincrement())
-  userId    Int
-  user      User        @relation(fields: [userId], references: [id])
-  courseId  Int
-  course    Course?     @relation(fields: [courseId], references: [id])
-  price     Decimal     @default(0.0)
-  status    OrderStatus @default(pending)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  deletedAt DateTime?
-  payment   Payment?
-}
-
-enum OrderStatus {
-  pending
-  paid
-  canceled
-}
-
 model Payment {
   id        Int           @id @default(autoincrement())
-  orderId   Int           @unique
-  order     Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  userId    Int
+  user      User          @relation(fields: [userId], references: [id])
+  courseId  Int?
+  course    Course?       @relation(fields: [courseId], references: [id])
+  price     Decimal       @default(0.0)
   status    PaymentStatus @default(pending)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
@@ -115,7 +98,6 @@ model Payment {
 
 enum PaymentStatus {
   pending
-  completed
-  failed
+  paid
   canceled
 }
