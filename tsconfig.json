@@ -17,6 +17,7 @@
 			"@/courses/*": ["src/domains/courses/*"],
 			"@/orders/*": ["src/domains/orders/*"],
 			"@/payments/*": ["src/domains/payments/*"],
+			"@/users/*": ["src/domains/users/*"]
 		},
 		"incremental": true,
 		"skipLibCheck": true,

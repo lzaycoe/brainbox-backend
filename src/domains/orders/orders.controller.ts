@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { CreateOrderDto } from '@/orders/dto/create-order.dto';
@@ -15,7 +15,7 @@ export class OrdersController {
 	}
 
 	@Get('user/:userId')
-	async findByUserId(userId: string) {
+	async findByUserId(@Param() userId: string) {
 		return this.ordersService.findByUserId(+userId);
 	}
 }
