@@ -114,8 +114,8 @@ export class PaymentsService {
 			orderCode: orderId,
 			amount: price,
 			description: 'BrainBox | Course Purchase',
-			cancelUrl: `${process.env.FRONTEND_URL}/payment-failed`,
-			returnUrl: `${process.env.FRONTEND_URL}/payment-history`,
+			cancelUrl: `${process.env.FRONTEND_URL}/purchase-failed`,
+			returnUrl: `${process.env.FRONTEND_URL}/purchase-history`,
 		};
 
 		const signature = this.createSignature(payload);
