@@ -75,7 +75,7 @@ export class PaymentsService {
 
 		this.logger.debug(`Processing orderCode: ${orderCode}`);
 
-		if (!orderCode || (orderCode === '123' && description === 'VQRIO123')) {
+		if (!orderCode || (orderCode == '123' && description == 'VQRIO123')) {
 			this.logger.warn(
 				'Received test webhook payload from PayOS, skipping processing.',
 			);
@@ -91,12 +91,27 @@ export class PaymentsService {
 			throw new Error(`Payment with ID ${orderCode} not found`);
 		}
 
+		const user = await this.prismaService.user.findUnique({
+			where: { id: payment.userId },
+		});
+
+		if (!user) {
+			this.logger.error(`User with ID ${payment.userId} not found`);
+			throw new Error(`User with ID ${payment.userId} not found`);
+		}
+
 		const isBecomeTeacher = description === 'BrainBox Become a Teacher';
 		const updateRolePromise =
 			isBecomeTeacher && payload.success
-				? this.clerkClient.users.updateUser(payment.userId.toString(), {
-						publicMetadata: { role: 'teacher' },
-					})
+				? this.clerkClient.users
+						.updateUser(user.clerkId, {
+							publicMetadata: { role: 'teacher' },
+						})
+						.then(() => {
+							this.logger.debug(
+								`User ${user.id} has been updated to teacher role`,
+							);
+						})
 				: Promise.resolve();
 
 		const status = payload.success ? 'paid' : 'canceled';
