@@ -12,8 +12,9 @@ model User {
   id      Int    @id @default(autoincrement())
   clerkId String @unique
 
-  payment Payment[]
-  course  Course[]
+  payment  Payment[]
+  course   Course[]
+  progress Progress[]
 }
 
 model Admin {
@@ -47,8 +48,9 @@ model Course {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  section Section[]
-  payment Payment[]
+  section  Section[]
+  payment  Payment[]
+  progress Progress[]
 }
 
 model Section {
@@ -100,4 +102,19 @@ enum PaymentStatus {
   pending
   paid
   canceled
+}
+
+model Progress {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  courseId          Int
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course            Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  completedLectures Int[]    @default([])
+  sectionProgress   Json?
+  courseProgress    Float    @default(0.0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([userId, courseId])
 }

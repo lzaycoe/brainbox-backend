@@ -89,4 +89,130 @@ export class CoursesService {
 			throw error;
 		}
 	}
+
+	async updateProgress(userId: number, courseId: number, lectureId: number) {
+		const existingPayment = await this.prismaService.payment.findFirst({
+			where: { userId, courseId, status: 'paid' },
+		});
+
+		if (!existingPayment) {
+			this.logger.log(
+				`User with id '${userId}' has not purchased course with id '${courseId}'`,
+			);
+
+			throw new NotFoundException(
+				`User with id '${userId}' has not purchased course with id '${courseId}'`,
+			);
+		}
+
+		const progress = await this.prismaService.progress.findUnique({
+			where: { userId_courseId: { userId, courseId } },
+		});
+
+		if (!progress) {
+			this.logger.log(`Progress for user '${userId}' not found`);
+
+			const newProgress = await this.prismaService.progress.create({
+				data: {
+					userId,
+					courseId,
+					completedLectures: [lectureId],
+					sectionProgress: JSON.stringify(
+						await this.calculateSectionProgress([lectureId], courseId),
+					),
+					courseProgress: await this.calculateCourseProgress(
+						[lectureId],
+						courseId,
+					),
+				},
+			});
+
+			return newProgress;
+		}
+
+		if (progress.completedLectures.includes(lectureId)) return progress;
+
+		const updatedLectures = [...progress.completedLectures, lectureId];
+
+		const updateProgress = await this.prismaService.progress.update({
+			where: { userId_courseId: { userId, courseId } },
+			data: {
+				completedLectures: updatedLectures,
+				sectionProgress: JSON.stringify(
+					await this.calculateSectionProgress(updatedLectures, courseId),
+				),
+				courseProgress: await this.calculateCourseProgress(
+					updatedLectures,
+					courseId,
+				),
+			},
+		});
+
+		return updateProgress;
+	}
+
+	private async calculateSectionProgress(
+		completedLectures: number[],
+		courseId: number,
+	): Promise<{ [key: number]: number }> {
+		const sections = await this.prismaService.section.findMany({
+			where: { courseId },
+			include: { lecture: true },
+		});
+
+		const sectionProgress: { [key: number]: number } = {};
+
+		sections.forEach((section) => {
+			const totalLectures = section.lecture.length;
+			const completedInSection = section.lecture.filter((l) =>
+				completedLectures.includes(l.id),
+			).length;
+
+			sectionProgress[section.id] =
+				totalLectures > 0 ? (completedInSection / totalLectures) * 100 : 0;
+		});
+
+		return sectionProgress;
+	}
+
+	private async calculateCourseProgress(
+		completedLectures: number[],
+		courseId: number,
+	): Promise<number> {
+		const totalLectures = await this.prismaService.lecture.count({
+			where: { section: { course: { id: courseId } } },
+		});
+
+		return totalLectures > 0
+			? (completedLectures.length / totalLectures) * 100
+			: 0;
+	}
+
+	async getProgress(userId: number, courseId: number) {
+		const progress = await this.prismaService.progress.findUnique({
+			where: { userId_courseId: { userId, courseId } },
+		});
+
+		if (!progress) {
+			this.logger.log(`Progress for user '${userId}' not found`);
+
+			throw new NotFoundException(`Progress for user '${userId}' not found`);
+		}
+
+		return progress;
+	}
+
+	async getAllProgressOfUser(userId: number) {
+		const progresses = await this.prismaService.progress.findMany({
+			where: { userId },
+		});
+
+		if (!progresses) {
+			this.logger.log(`Progresses for user '${userId}' not found`);
+
+			throw new NotFoundException(`Progresses for user '${userId}' not found`);
+		}
+
+		return progresses;
+	}
 }
