@@ -1,11 +1,15 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { ConfigType } from '@nestjs/config';
-import * as crypto from 'crypto';
+import { ClerkClient } from '@clerk/backend';
+import {
+	ConflictException,
+	Inject,
+	Injectable,
+	Logger,
+	NotFoundException,
+} from '@nestjs/common';
 
-import payOSConfig from '@/configs/payos.config';
 import { CoursesService } from '@/courses/courses.service';
-import { OrdersService } from '@/orders/orders.service';
 import { CreatePaymentDto } from '@/payments/dto/create-payment.dto';
+import { PayOSService } from '@/payments/payos.service';
 import { PrismaService } from '@/providers/prisma.service';
 
 @Injectable()
@@ -14,154 +18,62 @@ export class PaymentsService {
 
 	constructor(
 		private readonly prismaService: PrismaService,
-		private readonly ordersService: OrdersService,
 		private readonly coursesService: CoursesService,
-		@Inject(payOSConfig.KEY)
-		private readonly payOSConfiguration: ConfigType<typeof payOSConfig>,
+		private readonly payOSService: PayOSService,
+		@Inject('ClerkClient')
+		private readonly clerkClient: ClerkClient,
 	) {}
 
 	async create(dto: CreatePaymentDto) {
-		const order = await this.ordersService.findOne(dto.orderId);
+		const existingPayment = await this.prismaService.payment.findFirst({
+			where: { userId: dto.userId, courseId: dto.courseId, status: 'paid' },
+		});
 
-		if (!order) {
-			this.logger.error(`Order ${dto.orderId} not found`);
-			throw new NotFoundException('Order not found');
+		if (existingPayment) {
+			this.logger.debug(
+				`User ${dto.userId} has already paid for course ${dto.courseId}`,
+			);
+			throw new ConflictException('User has already paid for the course');
 		}
 
-		if (order.courseId === null) {
-			this.logger.error(`Order ${dto.orderId} has no courseId`);
-			throw new NotFoundException('Order has no courseId');
+		const course = await this.coursesService.findOne(dto.courseId);
+
+		if (!course) {
+			this.logger.error(`Course with ID ${dto.courseId} not found`);
+			throw new NotFoundException(`Course with ID ${dto.courseId} not found`);
 		}
-		const course = await this.coursesService.findOne(order.courseId);
 
 		const items = [
-			{
-				name: course.title,
-				quantity: 1,
-				price: Number(course.salePrice),
-			},
+			{ name: course.title, quantity: 1, price: Number(course.salePrice) },
 		];
+		const newPayment = await this.prismaService.payment.create({ data: dto });
 
-		const expiredAt = new Date(Date.now() + 30 * 60 * 1000);
-
-		const headers = this.createHeaders();
-		const payload = this.createPayload(
-			dto.orderId,
-			Number(order.price),
+		const checkoutUrl = await this.payOSService.createPaymentLink(
+			newPayment.id,
+			dto.price,
 			items,
-			Math.floor(expiredAt.getTime() / 1000),
 		);
 
-		try {
-			const response = await fetch(
-				`${this.payOSConfiguration.baseURL}/v2/payment-requests`,
-				{
-					method: 'POST',
-					headers,
-					body: JSON.stringify({ ...payload }),
-				},
-			);
-
-			if (!response.ok) {
-				this.logger.error('Failed to create payment');
-				throw new Error('Failed to create payment');
-			}
-
-			const responseData = await response.json();
-			this.logger.debug('Payment API response:', responseData);
-
-			if (responseData?.data?.checkoutUrl) {
-				await this.prismaService.payment.create({
-					data: { orderId: dto.orderId },
-				});
-
-				const timeUntilExpiration = expiredAt.getTime() - Date.now();
-				setTimeout(
-					() => this.checkPaymentStatus(dto.orderId),
-					timeUntilExpiration,
-				);
-
-				return responseData.data.checkoutUrl;
-			} else {
-				this.logger.error('Checkout URL not found in the response');
-				throw new Error('Checkout URL not found');
-			}
-		} catch (error) {
-			this.logger.error(`Payment request error: ${error.message}`);
-			throw new Error('Failed to create payment');
-		}
-	}
-
-	private createHeaders(): Record<string, string> {
-		if (!this.payOSConfiguration.clientId || !this.payOSConfiguration.apiKey) {
-			this.logger.error('Client ID or API Key is not defined');
-			throw new NotFoundException('Client ID or API Key is not defined');
-		}
-		return {
-			'Content-Type': 'application/json',
-			'X-Client-Id': this.payOSConfiguration.clientId,
-			'X-Api-Key': this.payOSConfiguration.apiKey,
-		};
-	}
-
-	private createPayload(
-		orderId: number,
-		price: number,
-		items: any[],
-		expiredAt: number,
-	) {
-		const payload = {
-			orderCode: orderId,
-			amount: price,
-			description: 'BrainBox | Course Purchase',
-			cancelUrl: `${process.env.FRONTEND_URL}/purchase-failed`,
-			returnUrl: `${process.env.FRONTEND_URL}/purchase-history`,
-		};
-
-		const signature = this.createSignature(payload);
-		return {
-			...payload,
-			items,
-			expiredAt,
-			signature,
-		};
-	}
-
-	private createSignature(payload: Record<string, any>): string {
-		const dataString = Object.entries(payload)
-			.sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
-			.map(([key, value]) => `${key}=${value}`)
-			.join('&');
-
-		if (!this.payOSConfiguration.checksumKey) {
-			this.logger.error('Checksum key is not defined');
-			throw new NotFoundException('Checksum key is not defined');
+		if (!checkoutUrl) {
+			this.logger.error('Checkout URL not found in the response');
+			throw new Error('Checkout URL not found');
 		}
 
-		return crypto
-			.createHmac(
-				'sha256',
-				this.payOSConfiguration.checksumKey as crypto.BinaryLike,
-			)
-			.update(dataString)
-			.digest('hex');
+		return checkoutUrl;
 	}
 
 	async processWebhook(payload: any) {
 		this.logger.debug('Received webhook payload:', payload);
-		const validSignature = this.verifySignature(payload);
 
-		if (!validSignature) {
+		if (!(await this.payOSService.verifySignature(payload))) {
 			this.logger.error('Invalid signature');
-
 			throw new Error('Invalid signature');
 		}
 
-		const { success } = payload;
+		const orderCode = payload?.data?.orderCode;
+		const description = payload?.data?.description;
 
-		const { orderCode, description } = payload.data;
-
-		this.logger.debug('orderCode:', orderCode);
+		this.logger.debug(`Processing orderCode: ${orderCode}`);
 
 		if (!orderCode || (orderCode == '123' && description == 'VQRIO123')) {
 			this.logger.warn(
@@ -170,73 +82,60 @@ export class PaymentsService {
 			return { message: 'Test webhook received' };
 		}
 
-		const order = await this.ordersService.findOne(orderCode);
-		if (!order) {
-			throw new Error(`Order with ID ${orderCode} not found`);
+		const payment = await this.prismaService.payment.findUnique({
+			where: { id: orderCode },
+			select: { id: true, userId: true },
+		});
+		if (!payment) {
+			this.logger.error(`Payment with ID ${orderCode} not found`);
+			throw new Error(`Payment with ID ${orderCode} not found`);
 		}
 
-		if (success) {
-			await this.prismaService.payment.update({
-				where: { orderId: orderCode },
-				data: { status: 'completed' },
-			});
+		const user = await this.prismaService.user.findUnique({
+			where: { id: payment.userId },
+		});
 
-			await this.ordersService.update(orderCode, { status: 'paid' });
-			this.logger.debug(`Order ${orderCode} marked as paid`);
-		} else {
-			await this.prismaService.payment.update({
-				where: { orderId: orderCode },
-				data: { status: 'failed' },
-			});
-
-			await this.ordersService.update(orderCode, { status: 'canceled' });
-			this.logger.debug(`Order ${orderCode} marked as failed`);
+		if (!user) {
+			this.logger.error(`User with ID ${payment.userId} not found`);
+			throw new Error(`User with ID ${payment.userId} not found`);
 		}
 
+		const isBecomeTeacher = description === 'BrainBox Become a Teacher';
+		const updateRolePromise =
+			isBecomeTeacher && payload.success
+				? this.clerkClient.users
+						.updateUser(user.clerkId, {
+							publicMetadata: { role: 'teacher' },
+						})
+						.then(() => {
+							this.logger.debug(
+								`User ${user.id} has been updated to teacher role`,
+							);
+						})
+				: Promise.resolve();
+
+		const status = payload.success ? 'paid' : 'canceled';
+		const updatePaymentPromise = this.prismaService.payment.update({
+			where: { id: orderCode },
+			data: { status },
+		});
+
+		await Promise.all([updateRolePromise, updatePaymentPromise]);
+
+		this.logger.debug(`Payment ${orderCode} marked as ${status}`);
 		return 'Webhook processed successfully';
 	}
 
-	private verifySignature(payload: any): boolean {
-		const signature = payload.signature;
-		const payloadWithoutSignature = { ...payload.data };
-		delete payloadWithoutSignature.signature;
+	async findByUserId(userId: number) {
+		const payments = await this.prismaService.payment.findMany({
+			where: { userId },
+		});
 
-		this.logger.debug('payloadWithoutSignature data:', payloadWithoutSignature);
-		const calculatedSignature = this.createSignature(payloadWithoutSignature);
-		this.logger.debug('Calculated signature:', calculatedSignature);
-		this.logger.debug('Received signature:', signature);
-		return signature === calculatedSignature;
-	}
-
-	private async checkPaymentStatus(orderId: number) {
-		this.logger.log(`Checking payment status for order ${orderId}...`);
-
-		const paymentInfo = await this.getPaymentInfo(orderId);
-		const status = paymentInfo?.data?.status;
-
-		if (status !== 'PAID') {
-			await this.prismaService.payment.update({
-				where: { orderId },
-				data: { status: 'failed' },
-			});
-			await this.ordersService.update(orderId, { status: 'canceled' });
-
-			this.logger.warn(`Payment ${orderId} failed. Order canceled.`);
-		} else {
-			this.logger.log(`Payment ${orderId} successful.`);
+		if (!payments) {
+			this.logger.error('Payment not found');
+			throw new NotFoundException('Payment not found');
 		}
-	}
 
-	async getPaymentInfo(orderId: number) {
-		const headers = this.createHeaders();
-
-		const paymentInfo = await fetch(
-			`${this.payOSConfiguration.baseURL}/v2/payment-requests/${orderId}`,
-			{
-				method: 'GET',
-				headers,
-			},
-		);
-		return paymentInfo.json();
+		return payments;
 	}
 }

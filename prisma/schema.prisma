@@ -12,8 +12,9 @@ model User {
   id      Int    @id @default(autoincrement())
   clerkId String @unique
 
-  order  Order[]
-  course Course[]
+  payment  Payment[]
+  course   Course[]
+  progress Progress[]
 }
 
 model Admin {
@@ -47,8 +48,9 @@ model Course {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  section Section[]
-  order   Order[]
+  section  Section[]
+  payment  Payment[]
+  progress Progress[]
 }
 
 model Section {
@@ -84,30 +86,13 @@ model Lecture {
   updatedAt   DateTime    @updatedAt
 }
 
-model Order {
-  id        Int         @id @default(autoincrement())
-  userId    Int
-  user      User        @relation(fields: [userId], references: [id])
-  courseId  Int
-  course    Course?     @relation(fields: [courseId], references: [id])
-  price     Decimal     @default(0.0)
-  status    OrderStatus @default(pending)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  deletedAt DateTime?
-  payment   Payment?
-}
-
-enum OrderStatus {
-  pending
-  paid
-  canceled
-}
-
 model Payment {
   id        Int           @id @default(autoincrement())
-  orderId   Int           @unique
-  order     Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  userId    Int
+  user      User          @relation(fields: [userId], references: [id])
+  courseId  Int?
+  course    Course?       @relation(fields: [courseId], references: [id])
+  price     Decimal       @default(0.0)
   status    PaymentStatus @default(pending)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
@@ -115,7 +100,21 @@ model Payment {
 
 enum PaymentStatus {
   pending
-  completed
-  failed
+  paid
   canceled
+}
+
+model Progress {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  courseId          Int
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course            Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  completedLectures Int[]    @default([])
+  sectionProgress   Json?
+  courseProgress    Float    @default(0.0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([userId, courseId])
 }

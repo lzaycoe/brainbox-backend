@@ -1,14 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreatePaymentDto {
 	@ApiProperty()
 	@IsNotEmpty()
-	orderId: number;
+	userId: number;
 
 	@ApiProperty()
+	@IsOptional()
+	courseId: number;
+
+	@ApiProperty()
+	@IsNotEmpty()
+	price: number;
+
+	@ApiProperty({ enum: ['pending', 'paid', 'canceled'] })
+	@IsEnum(['pending', 'paid', 'canceled'])
 	@IsOptional()
 	status?: PaymentStatus;
 }
 
-export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'canceled';
+export type PaymentStatus = 'pending' | 'paid' | 'canceled';
