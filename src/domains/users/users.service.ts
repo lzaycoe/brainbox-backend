@@ -55,6 +55,19 @@ export class UsersService {
 		}
 	}
 
+	async findOneClerk(valueId: string): Promise<any> {
+		try {
+			const user = await this.findOne(valueId);
+
+			const clerkUser = await this.clerkClient.users.getUser(user.clerkId);
+
+			return clerkUser;
+		} catch (error: any) {
+			this.logger.error(error);
+			throw error;
+		}
+	}
+
 	async syncDatabaseFromLearner(@Req() req: RawBodyRequest<Request>) {
 		const SIGNING_SECRET = process.env.SIGNING_SECRET;
 
