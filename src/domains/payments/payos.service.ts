@@ -51,7 +51,18 @@ export class PayOSService {
 			const responseData = await response.json();
 			this.logger.debug('Payment API response:', responseData);
 
-			return responseData?.data?.checkoutUrl || null;
+			const checkoutUrl = responseData?.data?.checkoutUrl || null;
+
+			if (checkoutUrl) {
+				setTimeout(
+					() => {
+						this.checkPaymentStatus(paymentId);
+					},
+					expiredAt * 1000 - Date.now(),
+				);
+			}
+
+			return checkoutUrl;
 		} catch (error) {
 			this.logger.error(`Payment request error: ${error.message}`);
 			throw new Error('Failed to create payment');
@@ -67,7 +78,7 @@ export class PayOSService {
 		if (status !== 'PAID') {
 			await this.prismaService.payment.update({
 				where: { id },
-				data: { status: 'paid' },
+				data: { status: 'canceled' },
 			});
 			this.logger.warn(`Payment ${id} failed. Order canceled.`);
 		} else {
