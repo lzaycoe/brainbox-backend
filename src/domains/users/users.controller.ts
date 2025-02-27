@@ -21,6 +21,11 @@ export class UsersController {
 		return this.usersService.findOne(valueId);
 	}
 
+	@Get('/clerk/:valueId')
+	async findOneClerk(@Param('valueId') valueId: string) {
+		return this.usersService.findOneClerk(valueId);
+	}
+
 	@HttpCode(HttpStatus.OK)
 	@Post('learner/callback')
 	async learnerCreateCallback(@Request() req: any) {
