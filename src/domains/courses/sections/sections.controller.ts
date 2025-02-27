@@ -19,34 +19,34 @@ export class SectionsController {
 	constructor(private readonly sectionsService: SectionsService) {}
 
 	@Post()
-	create(
+	async create(
 		@Param('courseId') courseId: string,
 		@Body() createSectionDto: CreateSectionDto,
 	) {
-		return this.sectionsService.create(+courseId, createSectionDto);
+		return await this.sectionsService.create(+courseId, createSectionDto);
 	}
 
 	@Get()
-	findAll(@Param('courseId') courseId: string) {
-		return this.sectionsService.findAll(+courseId);
+	async findAll(@Param('courseId') courseId: string) {
+		return await this.sectionsService.findAll(+courseId);
 	}
 
 	@Get(':id')
-	findOne(@Param('courseId') courseId: string, @Param('id') id: string) {
-		return this.sectionsService.findOne(+courseId, +id);
+	async findOne(@Param('courseId') courseId: string, @Param('id') id: string) {
+		return await this.sectionsService.findOne(+courseId, +id);
 	}
 
 	@Put(':id')
-	update(
+	async update(
 		@Param('courseId') courseId: string,
 		@Param('id') id: string,
 		@Body() updateSectionDto: UpdateSectionDto,
 	) {
-		return this.sectionsService.update(+courseId, +id, updateSectionDto);
+		return await this.sectionsService.update(+courseId, +id, updateSectionDto);
 	}
 
 	@Delete(':id')
-	delete(@Param('courseId') courseId: string, @Param('id') id: string) {
-		return this.sectionsService.delete(+courseId, +id);
+	async delete(@Param('courseId') courseId: string, @Param('id') id: string) {
+		return await this.sectionsService.delete(+courseId, +id);
 	}
 }

@@ -42,4 +42,23 @@ export class CoursesController {
 	async delete(@Param('id') id: string) {
 		return await this.coursesService.delete(+id);
 	}
+
+	@Put(':id/lecture/:lectureId/user/:userId/progress')
+	async updateProgress(
+		@Param('id') id: string,
+		@Param('lectureId') lectureId: string,
+		@Param('userId') userId: string,
+	) {
+		return await this.coursesService.updateProgress(+userId, +id, +lectureId);
+	}
+
+	@Get(':id/user/:userId/progress')
+	async getProgress(@Param('id') id: string, @Param('userId') userId: string) {
+		return await this.coursesService.getProgress(+userId, +id);
+	}
+
+	@Get('user/:userId/progress')
+	async getAllProgressOfUser(@Param('userId') userId: string) {
+		return await this.coursesService.getAllProgressOfUser(+userId);
+	}
 }
