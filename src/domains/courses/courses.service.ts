@@ -91,6 +91,20 @@ export class CoursesService {
 	}
 
 	async updateProgress(userId: number, courseId: number, lectureId: number) {
+		const existingPayment = await this.prismaService.payment.findFirst({
+			where: { userId, courseId, status: 'paid' },
+		});
+
+		if (!existingPayment) {
+			this.logger.log(
+				`User with id '${userId}' has not purchased course with id '${courseId}'`,
+			);
+
+			throw new NotFoundException(
+				`User with id '${userId}' has not purchased course with id '${courseId}'`,
+			);
+		}
+
 		const progress = await this.prismaService.progress.findUnique({
 			where: { userId_courseId: { userId, courseId } },
 		});
