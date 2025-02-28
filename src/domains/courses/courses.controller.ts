@@ -33,6 +33,11 @@ export class CoursesController {
 		return await this.coursesService.findOne(+id);
 	}
 
+	@Get('/teacher/:teacherId')
+	async findAllByTeacher(@Param('teacherId') teacherId: string) {
+		return await this.coursesService.findAllByTeacher(+teacherId);
+	}
+
 	@Put(':id')
 	async update(@Param('id') id: string, @Body() dto: UpdateCourseDto) {
 		return await this.coursesService.update(+id, dto);
