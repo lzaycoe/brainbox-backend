@@ -209,4 +209,56 @@ export class UsersService {
 
 		return checkoutUrl;
 	}
+
+	async getTopTeachers(top: number) {
+		const topTeachers = await this.prismaService.user.findMany({
+			where: {
+				course: {
+					some: {
+						payment: {
+							some: {
+								status: 'paid',
+							},
+						},
+					},
+				},
+			},
+			select: {
+				id: true,
+				clerkId: true,
+				_count: {
+					select: {
+						course: {
+							where: {
+								payment: {
+									some: {
+										status: 'paid',
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			orderBy: {
+				course: {
+					_count: 'desc',
+				},
+			},
+			take: top,
+		});
+
+		this.logger.debug('Top teachers:', topTeachers);
+
+		const detailedTeachers = await Promise.all(
+			topTeachers.map(async (teacher) => {
+				const clerkUser = await this.findOneClerk(teacher.id.toString());
+				return { ...teacher, clerkUser };
+			}),
+		);
+
+		this.logger.debug('Detailed top teachers:', detailedTeachers);
+
+		return detailedTeachers;
+	}
 }

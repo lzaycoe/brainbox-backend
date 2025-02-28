@@ -138,4 +138,22 @@ export class PaymentsService {
 
 		return payments;
 	}
+
+	async findByCourseId(courseId: number) {
+		const payments = await this.prismaService.payment.findMany({
+			where: { courseId },
+		});
+
+		this.logger.debug(
+			`Found ${payments.length} payments for course ${courseId}`,
+			payments,
+		);
+
+		if (!payments) {
+			this.logger.error('Payment not found');
+			throw new NotFoundException('Payment not found');
+		}
+
+		return payments;
+	}
 }
