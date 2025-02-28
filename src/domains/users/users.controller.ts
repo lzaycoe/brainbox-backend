@@ -16,9 +16,14 @@ import { UsersService } from '@/users/users.service';
 export class UsersController {
 	constructor(private readonly usersService: UsersService) {}
 
-	@Get('/normal-id/:clerkId')
-	async getNormalId(@Param('clerkId') clerkId: string) {
-		return this.usersService.getNormalId(clerkId);
+	@Get('/:valueId')
+	async findOne(@Param('valueId') valueId: string) {
+		return this.usersService.findOne(valueId);
+	}
+
+	@Get('/clerk/:valueId')
+	async findOneClerk(@Param('valueId') valueId: string) {
+		return this.usersService.findOneClerk(valueId);
 	}
 
 	@HttpCode(HttpStatus.OK)

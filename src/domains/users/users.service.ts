@@ -27,23 +27,43 @@ export class UsersService {
 		private readonly clerkClient: ClerkClient,
 	) {}
 
-	async getNormalId(clerkId: string): Promise<any> {
+	async findOne(valueId: string): Promise<any> {
 		try {
-			const user = await this.prismaService.user.findUnique({
-				where: { clerkId: clerkId },
-			});
+			let user;
+
+			if (!isNaN(+valueId)) {
+				user = await this.prismaService.user.findUnique({
+					where: { id: +valueId },
+				});
+			} else {
+				user = await this.prismaService.user.findUnique({
+					where: { clerkId: valueId },
+				});
+			}
 
 			if (!user) {
 				throw new NotFoundException('User not found');
 			}
 
-			this.logger.log('User found with clerkId: ' + clerkId);
+			this.logger.log(`User found with identifier: ${valueId}`);
 			this.logger.debug(user);
 
-			return { id: user.id };
+			return user;
 		} catch (error: any) {
 			this.logger.error(error);
+			throw error;
+		}
+	}
 
+	async findOneClerk(valueId: string): Promise<any> {
+		try {
+			const user = await this.findOne(valueId);
+
+			const clerkUser = await this.clerkClient.users.getUser(user.clerkId);
+
+			return clerkUser;
+		} catch (error: any) {
+			this.logger.error(error);
 			throw error;
 		}
 	}
