@@ -36,4 +36,9 @@ export class UsersController {
 	async becomeATeacher(@Body() becomeATeacherDto: BecomeATeacherDto) {
 		return this.usersService.becomeATeacher(becomeATeacherDto);
 	}
+
+	@Get('teachers/top/:top')
+	async getTopTeachers(@Param('top') top: string) {
+		return this.usersService.getTopTeachers(+top);
+	}
 }

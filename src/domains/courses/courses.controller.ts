@@ -33,6 +33,11 @@ export class CoursesController {
 		return await this.coursesService.findOne(+id);
 	}
 
+	@Get(':id/lectures')
+	async findAllLectures(@Param('id') id: string) {
+		return await this.coursesService.findAllLectures(+id);
+	}
+
 	@Get('/teacher/:teacherId')
 	async findAllByTeacher(@Param('teacherId') teacherId: string) {
 		return await this.coursesService.findAllByTeacher(+teacherId);
