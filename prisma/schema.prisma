@@ -12,9 +12,12 @@ model User {
   id      Int    @id @default(autoincrement())
   clerkId String @unique
 
-  payment  Payment[]
-  course   Course[]
-  progress Progress[]
+  payment        Payment[]
+  course         Course[]
+  progress       Progress[]
+  conversationsA Conversation[] @relation("UserA")
+  conversationsB Conversation[] @relation("UserB")
+  messages       Message[]
 }
 
 model Admin {
@@ -117,4 +120,45 @@ model Progress {
   updatedAt         DateTime @updatedAt
 
   @@unique([userId, courseId])
+}
+
+model Conversation {
+  id        Int      @id @default(autoincrement())
+  userAId   Int
+  userBId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userA User @relation("UserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("UserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  messages Message[]
+
+  @@unique([userAId, userBId])
+}
+
+model Message {
+  id             Int           @id @default(autoincrement())
+  conversationId Int
+  senderId       Int
+  content        String?
+  attachments    String[]
+  messageType    MessageType   @default(text)
+  status         MessageStatus @default(sent)
+  createdAt      DateTime      @default(now())
+
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+enum MessageType {
+  text
+  image
+  file
+}
+
+enum MessageStatus {
+  sent
+  received
+  seen
 }
