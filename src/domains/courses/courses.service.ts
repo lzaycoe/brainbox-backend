@@ -53,6 +53,27 @@ export class CoursesService {
 		return course;
 	}
 
+	async findAllLectures(courseId: number): Promise<any> {
+		const lectures = await this.prismaService.lecture.findMany({
+			where: { section: { courseId } },
+		});
+
+		if (!lectures) {
+			this.logger.log(`Lectures for course with id '${courseId}' not found`);
+
+			throw new NotFoundException(
+				`Lectures for course with id '${courseId}' not found`,
+			);
+		}
+
+		this.logger.log(
+			`Found ${lectures.length} lectures for course with id '${courseId}'`,
+		);
+		this.logger.debug('Lectures', lectures);
+
+		return lectures;
+	}
+
 	async findAllByTeacher(teacherId: number): Promise<any> {
 		const courses = await this.prismaService.course.findMany({
 			where: { teacherId },

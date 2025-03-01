@@ -23,4 +23,9 @@ export class PaymentsController {
 	async findByUserId(@Param('userId') userId: string) {
 		return this.paymentsService.findByUserId(+userId);
 	}
+
+	@Get('course/:courseId')
+	async findByCourseId(@Param('courseId') courseId: string) {
+		return await this.paymentsService.findByCourseId(+courseId);
+	}
 }
