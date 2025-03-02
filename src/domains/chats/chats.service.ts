@@ -12,11 +12,6 @@ export class ChatsService {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	async createConversation(dto: CreateConversationDto) {
-		this.logger.debug('DTO received:', dto);
-
-		this.logger.debug('DTO userAId:', dto.userAId);
-		this.logger.debug('DTO userBId:', dto.userBId);
-
 		if (!dto.userAId || !dto.userBId) {
 			throw new BadRequestException('userAId and userBId are required');
 		}
@@ -66,22 +61,34 @@ export class ChatsService {
 	}
 
 	async sendMessage(dto: CreateMessageDto) {
-		return this.prismaService.message.create({
+		const newMessage = await this.prismaService.message.create({
 			data: { ...dto },
 		});
+
+		this.logger.log('New message created');
+
+		return newMessage;
 	}
 
 	async getMessages(conversationId: number) {
-		return this.prismaService.message.findMany({
+		const messages = await this.prismaService.message.findMany({
 			where: { conversationId },
 			orderBy: { createdAt: 'asc' },
 		});
+
+		this.logger.debug('messages:', messages);
+
+		return messages;
 	}
 
 	async updateMessageStatus(id: number, dto: UpdateMessageDto) {
-		return this.prismaService.message.update({
+		const updateMessage = await this.prismaService.message.update({
 			where: { id: id },
 			data: { ...dto },
 		});
+
+		this.logger.log('Message status updated');
+
+		return updateMessage;
 	}
 }

@@ -12,12 +12,9 @@ import {
 import { Server, Socket } from 'socket.io';
 
 import { ChatsService } from '@/chats/chats.service';
-import { CreateConversationDto } from '@/chats/dto/conversations/create-conversation.dto';
-import { CreateMessageDto } from '@/chats/dto/messages/create-message.dto';
-import { UpdateMessageDto } from '@/chats/dto/messages/update-message.dto';
 
 @ApiTags('Chats')
-@WebSocketGateway(4002, { cors: { origin: '*' } })
+@WebSocketGateway({ cors: { origin: '*' } })
 export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private readonly logger = new Logger(ChatsService.name);
 
@@ -36,7 +33,10 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		if (userId) {
 			this.activeUsers.set(userId, socket.id);
-			this.server.emit('activeUsers', Array.from(this.activeUsers.keys()));
+			this.server.emit(
+				`Connected for User ${userId}`,
+				Array.from(this.activeUsers.keys()),
+			);
 		}
 	}
 
@@ -48,54 +48,59 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		if (userId) {
 			this.activeUsers.delete(userId);
-			this.server.emit('activeUsers', Array.from(this.activeUsers.keys()));
+			this.server.emit(
+				`Disconnect for User ${userId}`,
+				Array.from(this.activeUsers.keys()),
+			);
 		}
 	}
 
 	@SubscribeMessage('createConversation')
 	async handleCreateConversation(
-		@MessageBody() dto: CreateConversationDto,
+		@MessageBody() payload: string,
 		@ConnectedSocket() client: Socket,
 	) {
-		console.log('🔥 Received WebSocket event: createConversation');
-		this.logger.log('📩 Received createConversation event:', dto);
+		const parsedDto = JSON.parse(payload);
 		try {
-			const conversation = await this.chatsService.createConversation(dto);
+			const conversation =
+				await this.chatsService.createConversation(parsedDto);
 			this.logger.log('✅ Created conversation:', conversation);
-			client.emit('conversationCreated', conversation);
+			client.emit('Conversation Created', conversation);
 		} catch (error) {
 			this.logger.error('❌ Error creating conversation:', error);
 		}
 	}
 
 	@SubscribeMessage('sendMessage')
-	async handleSendMessage(
-		@MessageBody() { id, dto }: { id: string; dto: CreateMessageDto },
-	) {
+	async handleSendMessage(@MessageBody() payload: string) {
+		const parsedPayload = JSON.parse(payload);
+		const { id, dto } = parsedPayload;
 		const message = await this.chatsService.sendMessage(dto);
 		const recipientSocketId = this.activeUsers.get(+id);
 		if (recipientSocketId) {
-			this.server.to(recipientSocketId).emit('newMessage', message);
+			this.server.to(recipientSocketId).emit('New Message', message);
 		}
-		const senderSocketId = this.activeUsers.get(dto.senderId);
+		const senderSocketId = this.activeUsers.get(+dto.senderId);
 		if (senderSocketId) {
-			this.server.to(senderSocketId).emit('messageSent', message);
+			this.server.to(senderSocketId).emit('Message Sent', message);
 		}
 	}
 
 	@SubscribeMessage('getMessages')
 	async handleGetMessages(
-		@MessageBody() conversationId: number,
+		@MessageBody() payload: string,
 		@ConnectedSocket() client: Socket,
 	) {
-		const messages = await this.chatsService.getMessages(conversationId);
-		client.emit('messages', messages);
+		const parsedPayload = JSON.parse(payload);
+		const { id } = parsedPayload;
+		const messages = await this.chatsService.getMessages(+id);
+		client.emit('Messages', messages);
 	}
 
 	@SubscribeMessage('updateMessageStatus')
-	async handleUpdateMessageStatus(
-		@MessageBody() { id, dto }: { id: string; dto: UpdateMessageDto },
-	) {
+	async handleUpdateMessageStatus(@MessageBody() payload: string) {
+		const parsedPayload = JSON.parse(payload);
+		const { id, dto } = parsedPayload;
 		const updatedMessage = await this.chatsService.updateMessageStatus(
 			+id,
 			dto,
@@ -104,7 +109,7 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (senderSocketId) {
 			this.server
 				.to(senderSocketId)
-				.emit('messageStatusUpdated', updatedMessage);
+				.emit('Message Status Updated', updatedMessage);
 		}
 	}
 }
