@@ -21,7 +21,7 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer()
 	server: Server;
 
-	private activeUsers = new Map<number, string>();
+	private readonly activeUsers = new Map<number, string>();
 
 	constructor(private readonly chatsService: ChatsService) {}
 
