@@ -1,6 +1,7 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import cookieParser from 'cookie-parser';
 
 import { AppModule } from '@/app.module';
@@ -29,6 +30,9 @@ async function bootstrap() {
 
 	// Enable validation pipe
 	app.useGlobalPipes(new ValidationPipe());
+
+	// Enable WebSocket
+	app.useWebSocketAdapter(new IoAdapter(app));
 
 	// Setup Swagger
 	setupSwagger(app);
