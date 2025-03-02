@@ -41,6 +41,9 @@ importers:
       '@prisma/client':
         specifier: 6.3.1
         version: 6.3.1(prisma@6.3.1(typescript@5.7.3))(typescript@5.7.3)
+      '@types/socket.io':
+        specifier: 3.0.2
+        version: 3.0.2
       argon2:
         specifier: 0.41.1
         version: 0.41.1
@@ -77,6 +80,9 @@ importers:
       rxjs:
         specifier: 7.8.1
         version: 7.8.1
+      socket.io:
+        specifier: 4.8.1
+        version: 4.8.1
       svix:
         specifier: 1.60.0
         version: 1.60.0
@@ -832,6 +838,10 @@ packages:
 
   '@types/serve-static@1.15.7':
     resolution: {integrity: sha512-W8Ym+h8nhuRwaKPaDw34QUkwsGi6Rc4yYqvKFo5rm2FUEhCFbzVWrxXUxuKK8TASjWsysJY0nsmNCGhCOIsrOw==}
+
+  '@types/socket.io@3.0.2':
+    resolution: {integrity: sha512-pu0sN9m5VjCxBZVK8hW37ZcMe8rjn4HHggBN5CbaRTvFwv5jOmuIRZEuddsBPa9Th0ts0SIo3Niukq+95cMBbQ==}
+    deprecated: This is a stub types definition. socket.io provides its own type definitions, so you do not need this installed.
 
   '@types/validator@13.12.2':
     resolution: {integrity: sha512-6SlHBzUW8Jhf3liqrGGXyTJSIFe4nqlJ5A5KaMZ2l/vbM3Wh3KSybots/wfWVzNLK4D1NZluDlSQIbIEPx6oyA==}
@@ -3803,6 +3813,14 @@ snapshots:
       '@types/http-errors': 2.0.4
       '@types/node': 20.17.0
       '@types/send': 0.17.4
+
+  '@types/socket.io@3.0.2':
+    dependencies:
+      socket.io: 4.8.1
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
 
   '@types/validator@13.12.2': {}
 
