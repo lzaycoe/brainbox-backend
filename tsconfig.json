@@ -16,7 +16,8 @@
 			"@/admins/*": ["src/domains/admins/*"],
 			"@/courses/*": ["src/domains/courses/*"],
 			"@/payments/*": ["src/domains/payments/*"],
-			"@/users/*": ["src/domains/users/*"]
+			"@/users/*": ["src/domains/users/*"],
+			"@/chats/*": ["src/domains/chats/*"]
 		},
 		"incremental": true,
 		"skipLibCheck": true,
