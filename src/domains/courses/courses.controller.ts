@@ -53,6 +53,14 @@ export class CoursesController {
 		return await this.coursesService.delete(+id);
 	}
 
+	@Post(':id/user/:userId/progress')
+	async createProgress(
+		@Param('id') id: string,
+		@Param('userId') userId: string,
+	) {
+		return await this.coursesService.createProgress(+userId, +id);
+	}
+
 	@Put(':id/lecture/:lectureId/user/:userId/progress')
 	async updateProgress(
 		@Param('id') id: string,
