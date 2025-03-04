@@ -132,6 +132,44 @@ export class CoursesService {
 		}
 	}
 
+	async createProgress(userId: number, courseId: number) {
+		const existingPayment = await this.prismaService.payment.findFirst({
+			where: { userId, courseId, status: 'paid' },
+		});
+
+		if (!existingPayment) {
+			this.logger.log(
+				`User with id '${userId}' has not purchased course with id '${courseId}'`,
+			);
+
+			throw new NotFoundException(
+				`User with id '${userId}' has not purchased course with id '${courseId}'`,
+			);
+		}
+
+		const progress = await this.prismaService.progress.findUnique({
+			where: { userId_courseId: { userId, courseId } },
+		});
+
+		if (progress) {
+			this.logger.log(`Progress for user '${userId}' already exists`);
+
+			return progress;
+		}
+
+		const newProgress = await this.prismaService.progress.create({
+			data: {
+				userId,
+				courseId,
+				completedLectures: [],
+				sectionProgress: '{}',
+				courseProgress: 0,
+			},
+		});
+
+		return newProgress;
+	}
+
 	async updateProgress(userId: number, courseId: number, lectureId: number) {
 		const existingPayment = await this.prismaService.payment.findFirst({
 			where: { userId, courseId, status: 'paid' },
