@@ -12,9 +12,10 @@ model User {
   id      Int    @id @default(autoincrement())
   clerkId String @unique
 
-  payment        Payment[]
-  course         Course[]
+  courses        Course[]
+  payments       Payment[]
   progress       Progress[]
+  revenues       Revenue[]
   conversationsA Conversation[] @relation("UserA")
   conversationsB Conversation[] @relation("UserB")
   messages       Message[]
@@ -51,9 +52,10 @@ model Course {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  section  Section[]
-  payment  Payment[]
+  sections Section[]
+  payments Payment[]
   progress Progress[]
+  revenues Revenue[]
 }
 
 model Section {
@@ -64,7 +66,7 @@ model Section {
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 
-  lecture Lecture[]
+  lectures Lecture[]
 }
 
 enum LectureType {
@@ -90,21 +92,35 @@ model Lecture {
 }
 
 model Payment {
-  id        Int           @id @default(autoincrement())
-  userId    Int
-  user      User          @relation(fields: [userId], references: [id])
-  courseId  Int?
-  course    Course?       @relation(fields: [courseId], references: [id])
-  price     Decimal       @default(0.0)
-  status    PaymentStatus @default(pending)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id                Int           @id @default(autoincrement())
+  userId            Int
+  user              User          @relation(fields: [userId], references: [id])
+  courseId          Int?
+  course            Course?       @relation(fields: [courseId], references: [id])
+  price             Decimal       @default(0.0)
+  status            PaymentStatus @default(pending)
+  revenueCalculated Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 }
 
 enum PaymentStatus {
   pending
   paid
   canceled
+}
+
+model Revenue {
+  id           Int      @id @default(autoincrement())
+  teacherId    Int
+  teacher      User     @relation(fields: [teacherId], references: [id])
+  courseId     Int
+  course       Course   @relation(fields: [courseId], references: [id])
+  totalRevenue Decimal  @default(0.0)
+  serviceFee   Decimal  @default(0.0)
+  netRevenue   Decimal  @default(0.0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Progress {
