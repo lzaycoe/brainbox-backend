@@ -12,22 +12,23 @@ model User {
   id      Int    @id @default(autoincrement())
   clerkId String @unique
 
-  courses            Course[]
-  payments           Payment[]
-  progress           Progress[]
-  revenues           Revenue[]
-  conversationsA     Conversation[]      @relation("UserA")
-  conversationsB     Conversation[]      @relation("UserB")
-  messages           Message[]
-  withdrawals Withdrawal[]
+  courses        Course[]
+  payments       Payment[]
+  progress       Progress[]
+  revenues       Revenue[]
+  conversationsA Conversation[] @relation("UserA")
+  conversationsB Conversation[] @relation("UserB")
+  messages       Message[]
+  withdrawals    Withdrawal[]
 }
 
 model Admin {
-  id             Int      @id @default(autoincrement())
-  username       String   @unique
+  id             Int       @id @default(autoincrement())
+  username       String    @unique
   hashedPassword String
-  createAt       DateTime @default(now())
-  updateAt       DateTime @updatedAt
+  createAt       DateTime  @default(now())
+  updateAt       DateTime  @updatedAt
+  deleteAt       DateTime?
 
   withdrawal Withdrawal[]
 }
