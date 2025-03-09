@@ -237,14 +237,14 @@ export class CoursesService {
 	): Promise<{ [key: number]: number }> {
 		const sections = await this.prismaService.section.findMany({
 			where: { courseId },
-			include: { lecture: true },
+			include: { lectures: true },
 		});
 
 		const sectionProgress: { [key: number]: number } = {};
 
 		sections.forEach((section) => {
-			const totalLectures = section.lecture.length;
-			const completedInSection = section.lecture.filter((l) =>
+			const totalLectures = section.lectures.length;
+			const completedInSection = section.lectures.filter((l) =>
 				completedLectures.includes(l.id),
 			).length;
 

@@ -73,7 +73,7 @@ export class ChatsService {
 	async getMessages(conversationId: number) {
 		const messages = await this.prismaService.message.findMany({
 			where: { conversationId },
-			orderBy: { createdAt: 'asc' },
+			orderBy: { createAt: 'asc' },
 		});
 
 		this.logger.debug('messages:', messages);

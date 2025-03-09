@@ -213,9 +213,9 @@ export class UsersService {
 	async getTopTeachers(top: number) {
 		const topTeachers = await this.prismaService.user.findMany({
 			where: {
-				course: {
+				courses: {
 					some: {
-						payment: {
+						payments: {
 							some: {
 								status: 'paid',
 							},
@@ -228,9 +228,9 @@ export class UsersService {
 				clerkId: true,
 				_count: {
 					select: {
-						course: {
+						courses: {
 							where: {
-								payment: {
+								payments: {
 									some: {
 										status: 'paid',
 									},
@@ -241,7 +241,7 @@ export class UsersService {
 				},
 			},
 			orderBy: {
-				course: {
+				courses: {
 					_count: 'desc',
 				},
 			},
