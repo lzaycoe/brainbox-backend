@@ -8,6 +8,7 @@ import { PaymentsService } from '@/payments/payments.service';
 import { PayOSService } from '@/payments/payos.service';
 import { ClerkClientProvider } from '@/providers/clerk.service';
 import { PrismaService } from '@/providers/prisma.service';
+import { RevenuesService } from '@/revenues/revenues.service';
 
 @Module({
 	imports: [ConfigModule.forFeature(payOSConfig)],
@@ -17,6 +18,7 @@ import { PrismaService } from '@/providers/prisma.service';
 		PrismaService,
 		CoursesService,
 		PayOSService,
+		RevenuesService,
 		ClerkClientProvider,
 	],
 	exports: [PaymentsService],

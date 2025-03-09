@@ -11,6 +11,7 @@ import { CoursesService } from '@/courses/courses.service';
 import { CreatePaymentDto } from '@/payments/dto/create-payment.dto';
 import { PayOSService } from '@/payments/payos.service';
 import { PrismaService } from '@/providers/prisma.service';
+import { RevenuesService } from '@/revenues/revenues.service';
 
 @Injectable()
 export class PaymentsService {
@@ -20,6 +21,7 @@ export class PaymentsService {
 		private readonly prismaService: PrismaService,
 		private readonly coursesService: CoursesService,
 		private readonly payOSService: PayOSService,
+		private readonly revenuesService: RevenuesService,
 		@Inject('ClerkClient')
 		private readonly clerkClient: ClerkClient,
 	) {}
@@ -72,10 +74,11 @@ export class PaymentsService {
 
 		const orderCode = payload?.data?.orderCode;
 		const description = payload?.data?.description;
+		const amount = payload?.data?.amount;
 
 		this.logger.debug(`Processing orderCode: ${orderCode}`);
 
-		if (!orderCode || (orderCode == '123' && description == 'VQRIO123')) {
+		if (!orderCode || (orderCode === '123' && description === 'VQRIO123')) {
 			this.logger.warn(
 				'Received test webhook payload from PayOS, skipping processing.',
 			);
@@ -84,8 +87,8 @@ export class PaymentsService {
 
 		const payment = await this.prismaService.payment.findUnique({
 			where: { id: orderCode },
-			select: { id: true, userId: true },
 		});
+
 		if (!payment) {
 			this.logger.error(`Payment with ID ${orderCode} not found`);
 			throw new Error(`Payment with ID ${orderCode} not found`);
@@ -114,13 +117,37 @@ export class PaymentsService {
 						})
 				: Promise.resolve();
 
+		if (payment.courseId === null) {
+			this.logger.error(
+				`Payment with ID ${orderCode} has no associated course`,
+			);
+			throw new Error(`Payment with ID ${orderCode} has no associated course`);
+		}
+		const course = await this.coursesService.findOne(payment.courseId);
+		let updateRevenuePromise = Promise.resolve();
+
+		if (course) {
+			this.logger.debug(`Updating revenue for teacher ${course.teacherId}`);
+			updateRevenuePromise = this.revenuesService
+				.calculateRevenue(course.teacherId, payment.courseId, amount)
+				.then(() => {});
+		} else {
+			this.logger.warn(
+				`Order ${payment.courseId} is not associated with a course, skipping revenue update.`,
+			);
+		}
+
 		const status = payload.success ? 'paid' : 'canceled';
 		const updatePaymentPromise = this.prismaService.payment.update({
 			where: { id: orderCode },
 			data: { status },
 		});
 
-		await Promise.all([updateRolePromise, updatePaymentPromise]);
+		await Promise.all([
+			updateRolePromise,
+			updatePaymentPromise,
+			updateRevenuePromise,
+		]);
 
 		this.logger.debug(`Payment ${orderCode} marked as ${status}`);
 		return 'Webhook processed successfully';

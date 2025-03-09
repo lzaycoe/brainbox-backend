@@ -2,7 +2,6 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { CreateRevenueDto } from '@/revenues/dto/create-revenue.dto';
-// import { UpdateRevenueDto } from '@/revenues/dto/update-revenue.dto';
 import { RevenuesService } from '@/revenues/revenues.service';
 
 @ApiTags('Revenues')

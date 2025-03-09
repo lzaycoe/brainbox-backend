@@ -3,8 +3,6 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/providers/prisma.service';
 import { CreateRevenueDto } from '@/revenues/dto/create-revenue.dto';
 
-// import { UpdateRevenueDto } from '@/revenues/dto/update-revenue.dto';
-
 @Injectable()
 export class RevenuesService {
 	private readonly logger = new Logger(RevenuesService.name);
@@ -78,13 +76,27 @@ export class RevenuesService {
 		});
 
 		if (!revenue) {
-			this.logger.error(
-				`Revenue for teacher ${teacherId} and course ${courseId} not found`,
+			const totalRevenue = price;
+			const serviceFee = totalRevenue * 0.1;
+			const netRevenue = totalRevenue - serviceFee;
+			const totalWithdrawn = 0;
+			const availableForWithdraw = netRevenue - totalWithdrawn;
+
+			const newRevenue = await this.create({
+				teacherId,
+				courseId,
+				totalRevenue,
+				serviceFee,
+				netRevenue,
+				totalWithdrawn,
+				availableForWithdraw,
+			});
+
+			this.logger.debug(
+				`Revenue for teacher ${teacherId} and course ${courseId} created successfully`,
 			);
 
-			throw new NotFoundException(
-				`Revenue for teacher ${teacherId} and course ${courseId} not found`,
-			);
+			return newRevenue;
 		}
 
 		const totalRevenue = +revenue.totalRevenue + price;
