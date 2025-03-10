@@ -37,8 +37,8 @@ export class RevenuesService {
 		return newRevenue;
 	}
 
-	async findAllByTeacher(teacherId: number) {
-		const revenue = await this.prismaService.revenue.findMany({
+	async findByTeacherId(teacherId: number) {
+		const revenue = await this.prismaService.revenue.findFirst({
 			where: { teacherId },
 		});
 
@@ -91,6 +91,33 @@ export class RevenuesService {
 				totalRevenue,
 				serviceFee,
 				netRevenue,
+				availableForWithdraw,
+			},
+		});
+
+		this.logger.debug(`Revenue for teacher ${teacherId} updated successfully`);
+
+		return updatedRevenue;
+	}
+
+	async updateTotalWithdrawn(teacherId: number, amount: number) {
+		const revenue = await this.prismaService.revenue.findFirst({
+			where: { teacherId },
+		});
+
+		if (!revenue) {
+			this.logger.error(`Revenue for teacher ${teacherId} not found`);
+
+			throw new NotFoundException(`Revenue for teacher ${teacherId} not found`);
+		}
+
+		const totalWithdrawn = +revenue.totalWithdrawn + amount;
+		const availableForWithdraw = +revenue.availableForWithdraw - amount;
+
+		const updatedRevenue = await this.prismaService.revenue.update({
+			where: { id: revenue.id },
+			data: {
+				totalWithdrawn,
 				availableForWithdraw,
 			},
 		});

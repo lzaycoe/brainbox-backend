@@ -14,8 +14,8 @@ export class RevenuesController {
 		return await this.revenuesService.create(createRevenueDto);
 	}
 
-	@Get('teacher/:id')
-	async findAllByTeacher(@Param('id') id: string) {
-		return await this.revenuesService.findAllByTeacher(+id);
+	@Get('teacher/:teacherId')
+	async findByTeacherId(@Param('teacherId') teacherId: string) {
+		return await this.revenuesService.findByTeacherId(+teacherId);
 	}
 }
