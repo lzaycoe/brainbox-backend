@@ -50,10 +50,20 @@ export class WithdrawalsService {
 
 		const withdrawals = await this.prismaService.withdrawal.findMany();
 
-		this.logger.debug('Withdrawals found', withdrawals);
-		this.logger.log(`Found ${withdrawals.length} withdrawals`);
+		const withdrawalsWithBankAccounts = await Promise.all(
+			withdrawals.map(async (withdrawal) => {
+				const user = await this.usersService.findOneClerk(
+					withdrawal.teacherId.toString(),
+				);
+				const bankAccount = user?.publicMetadata?.bank_account;
+				return { ...withdrawal, bankAccount };
+			}),
+		);
 
-		return withdrawals;
+		this.logger.debug('Withdrawals found', withdrawalsWithBankAccounts);
+		this.logger.log(`Found ${withdrawalsWithBankAccounts.length} withdrawals`);
+
+		return withdrawalsWithBankAccounts;
 	}
 
 	async findOne(id: number) {
@@ -68,10 +78,16 @@ export class WithdrawalsService {
 			throw new NotFoundException('Withdrawal not found');
 		}
 
+		const user = await this.usersService.findOneClerk(
+			withdrawal.teacherId.toString(),
+		);
+
+		const bankAccount = user?.publicMetadata?.bank_account;
+
 		this.logger.debug('Withdrawal found', withdrawal);
 		this.logger.log(`Found withdrawal with ID ${id}`);
 
-		return withdrawal;
+		return { withdrawal, bankAccount };
 	}
 
 	async update(id: number, dto: UpdateWithdrawalDto) {
