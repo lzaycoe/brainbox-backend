@@ -18,7 +18,9 @@
 			"@/payments/*": ["src/domains/payments/*"],
 			"@/users/*": ["src/domains/users/*"],
 			"@/chats/*": ["src/domains/chats/*"],
-			"@/revenues/*": ["src/domains/revenues/*"]
+			"@/revenues/*": ["src/domains/revenues/*"],
+			"@/withdrawals/*": ["src/domains/withdrawals/*"],
+			"@/notifies/*": ["src/domains/notifies/*"],
 		},
 		"incremental": true,
 		"skipLibCheck": true,

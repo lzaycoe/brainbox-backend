@@ -2,25 +2,27 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import payOSConfig from '@/configs/payos.config';
-import { CoursesService } from '@/courses/courses.service';
-import { PaymentsController } from '@/payments/payments.controller';
-import { PaymentsService } from '@/payments/payments.service';
+import { EmailService } from '@/notifies/email.service';
 import { PayOSService } from '@/payments/payos.service';
 import { ClerkClientProvider } from '@/providers/clerk.service';
 import { PrismaService } from '@/providers/prisma.service';
 import { RevenuesService } from '@/revenues/revenues.service';
+import { UsersService } from '@/users/users.service';
+import { WithdrawalsController } from '@/withdrawals/withdrawals.controller';
+import { WithdrawalsService } from '@/withdrawals/withdrawals.service';
 
 @Module({
 	imports: [ConfigModule.forFeature(payOSConfig)],
-	controllers: [PaymentsController],
+	controllers: [WithdrawalsController],
 	providers: [
-		PaymentsService,
+		WithdrawalsService,
 		PrismaService,
-		CoursesService,
-		PayOSService,
 		RevenuesService,
+		EmailService,
+		UsersService,
+		PayOSService,
 		ClerkClientProvider,
 	],
-	exports: [PaymentsService],
+	exports: [WithdrawalsService],
 })
-export class PaymentsModule {}
+export class WithdrawalsModule {}
