@@ -12,7 +12,7 @@ export class CreateWithdrawalDto {
 
 	@ApiProperty()
 	@IsNotEmpty()
-	@IsEnum(['pending', 'approved', 'rejected', 'processing', 'completed'])
+	@IsEnum(['pending', 'approved', 'rejected'])
 	status: WithdrawalStatus;
 
 	@ApiProperty()
@@ -24,9 +24,4 @@ export class CreateWithdrawalDto {
 	reason?: string;
 }
 
-export type WithdrawalStatus =
-	| 'pending'
-	| 'approved'
-	| 'rejected'
-	| 'processing'
-	| 'completed';
+export type WithdrawalStatus = 'pending' | 'approved' | 'rejected';
