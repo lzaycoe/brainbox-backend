@@ -8,10 +8,6 @@ export class CreateRevenueDto {
 
 	@ApiProperty()
 	@IsNotEmpty()
-	courseId: number;
-
-	@ApiProperty()
-	@IsNotEmpty()
 	totalRevenue: number;
 
 	@ApiProperty()
