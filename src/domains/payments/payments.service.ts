@@ -65,47 +65,46 @@ export class PaymentsService {
 	}
 
 	async processWebhook(payload: any) {
-		this.logger.debug('Received webhook payload:', payload);
+		try {
+			this.logger.debug('Received webhook payload:', payload);
 
-		if (!(await this.payOSService.verifySignature(payload))) {
-			this.logger.error('Invalid signature');
-			throw new Error('Invalid signature');
-		}
+			if (!(await this.payOSService.verifySignature(payload))) {
+				this.logger.error('Invalid signature');
+				throw new Error('Invalid signature');
+			}
 
-		const orderCode = payload?.data?.orderCode;
-		const description = payload?.data?.description;
-		const amount = payload?.data?.amount;
+			const orderCode = payload?.data?.orderCode;
+			const description = payload?.data?.description;
+			const amount = payload?.data?.amount;
+			const isSuccess = payload.success;
 
-		this.logger.debug(`Processing orderCode: ${orderCode}`);
+			this.logger.debug(`Processing orderCode: ${orderCode}`);
 
-		if (!orderCode || (orderCode === '123' && description === 'VQRIO123')) {
-			this.logger.warn(
-				'Received test webhook payload from PayOS, skipping processing.',
-			);
-			return { message: 'Test webhook received' };
-		}
+			if (!orderCode || !isSuccess) {
+				this.logger.warn('Ignoring non-successful webhook from PayOS.');
+				return { message: 'Ignoring non-successful webhook' };
+			}
 
-		const payment = await this.prismaService.payment.findUnique({
-			where: { id: orderCode },
-		});
+			const payment = await this.prismaService.payment.findUnique({
+				where: { id: orderCode },
+			});
 
-		if (!payment) {
-			this.logger.error(`Payment with ID ${orderCode} not found`);
-			throw new Error(`Payment with ID ${orderCode} not found`);
-		}
+			if (!payment) {
+				this.logger.error(`Payment with ID ${orderCode} not found`);
+				throw new Error(`Payment with ID ${orderCode} not found`);
+			}
 
-		const user = await this.prismaService.user.findUnique({
-			where: { id: payment.userId },
-		});
+			const user = await this.prismaService.user.findUnique({
+				where: { id: payment.userId },
+			});
 
-		if (!user) {
-			this.logger.error(`User with ID ${payment.userId} not found`);
-			throw new Error(`User with ID ${payment.userId} not found`);
-		}
+			if (!user) {
+				this.logger.error(`User with ID ${payment.userId} not found`);
+				throw new Error(`User with ID ${payment.userId} not found`);
+			}
 
-		const isBecomeTeacher = description === 'BrainBox Become a Teacher';
-		const updateRolePromise =
-			isBecomeTeacher && payload.success
+			const isBecomeTeacher = description === 'BrainBox Become a Teacher';
+			const updateRolePromise = isBecomeTeacher
 				? this.clerkClient.users
 						.updateUser(user.clerkId, {
 							publicMetadata: { role: 'teacher' },
@@ -115,42 +114,67 @@ export class PaymentsService {
 								`User ${user.id} has been updated to teacher role`,
 							);
 						})
+						.catch((error) => {
+							this.logger.error(
+								`Failed to update user ${user.id} role: ${error.message}`,
+							);
+						})
 				: Promise.resolve();
 
-		if (payment.courseId === null) {
-			this.logger.error(
-				`Payment with ID ${orderCode} has no associated course`,
+			if (!payment.courseId) {
+				this.logger.error(
+					`Payment with ID ${orderCode} has no associated course`,
+				);
+				throw new Error(
+					`Payment with ID ${orderCode} has no associated course`,
+				);
+			}
+
+			const course = await this.coursesService.findOne(payment.courseId);
+			let updateRevenuePromise = Promise.resolve();
+
+			if (course && amount) {
+				this.logger.debug(`Updating revenue for teacher ${course.teacherId}`);
+				updateRevenuePromise = this.revenuesService
+					.calculateRevenue(course.teacherId, amount)
+					.then(() => {})
+					.catch((error) => {
+						this.logger.error(`Failed to update revenue: ${error.message}`);
+					});
+
+				this.logger.debug(
+					`User ${payment.userId} is enrolled in course ${payment.courseId}`,
+				);
+			} else {
+				this.logger.warn(
+					`Course ${payment.courseId} not found or amount is missing, skipping revenue update.`,
+				);
+			}
+
+			const createProgressPromise = this.coursesService.createProgress(
+				payment.userId,
+				payment.courseId,
 			);
-			throw new Error(`Payment with ID ${orderCode} has no associated course`);
+
+			const status = isSuccess ? 'paid' : 'canceled';
+			const updatePaymentPromise = this.prismaService.payment.update({
+				where: { id: orderCode },
+				data: { status },
+			});
+
+			await Promise.all([
+				updateRolePromise,
+				updatePaymentPromise,
+				updateRevenuePromise,
+				createProgressPromise,
+			]);
+
+			this.logger.debug(`Payment ${orderCode} marked as ${status}`);
+			return 'Webhook processed successfully';
+		} catch (error) {
+			this.logger.error(`Error processing webhook: ${error.message}`);
+			throw new Error(`Webhook processing failed: ${error.message}`);
 		}
-		const course = await this.coursesService.findOne(payment.courseId);
-		let updateRevenuePromise = Promise.resolve();
-
-		if (course) {
-			this.logger.debug(`Updating revenue for teacher ${course.teacherId}`);
-			updateRevenuePromise = this.revenuesService
-				.calculateRevenue(course.teacherId, amount)
-				.then(() => {});
-		} else {
-			this.logger.warn(
-				`Order ${payment.courseId} is not associated with a course, skipping revenue update.`,
-			);
-		}
-
-		const status = payload.success ? 'paid' : 'canceled';
-		const updatePaymentPromise = this.prismaService.payment.update({
-			where: { id: orderCode },
-			data: { status },
-		});
-
-		await Promise.all([
-			updateRolePromise,
-			updatePaymentPromise,
-			updateRevenuePromise,
-		]);
-
-		this.logger.debug(`Payment ${orderCode} marked as ${status}`);
-		return 'Webhook processed successfully';
 	}
 
 	async findByUserId(userId: number) {
