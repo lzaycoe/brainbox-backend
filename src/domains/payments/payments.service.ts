@@ -94,6 +94,13 @@ export class PaymentsService {
 				throw new Error(`Payment with ID ${orderCode} not found`);
 			}
 
+			// Update payment status to avoid inconsistencies in case of errors in further processing
+			await this.prismaService.payment.update({
+				where: { id: orderCode },
+				data: { status: 'paid' },
+			});
+			this.logger.debug(`Payment ${orderCode} marked as paid`);
+
 			const user = await this.prismaService.user.findUnique({
 				where: { id: payment.userId },
 			});
@@ -104,22 +111,14 @@ export class PaymentsService {
 			}
 
 			const isBecomeTeacher = description === 'BrainBox Become a Teacher';
-			const updateRolePromise = isBecomeTeacher
-				? this.clerkClient.users
-						.updateUser(user.clerkId, {
-							publicMetadata: { role: 'teacher' },
-						})
-						.then(() => {
-							this.logger.debug(
-								`User ${user.id} has been updated to teacher role`,
-							);
-						})
-						.catch((error) => {
-							this.logger.error(
-								`Failed to update user ${user.id} role: ${error.message}`,
-							);
-						})
-				: Promise.resolve();
+
+			if (isBecomeTeacher) {
+				await this.clerkClient.users.updateUser(user.clerkId, {
+					publicMetadata: { role: 'teacher' },
+				});
+				this.logger.debug(`User ${user.id} has been updated to teacher role`);
+				return 'Webhook processed successfully for teacher registration';
+			}
 
 			if (!payment.courseId) {
 				this.logger.error(
@@ -141,14 +140,6 @@ export class PaymentsService {
 					.catch((error) => {
 						this.logger.error(`Failed to update revenue: ${error.message}`);
 					});
-
-				this.logger.debug(
-					`User ${payment.userId} is enrolled in course ${payment.courseId}`,
-				);
-			} else {
-				this.logger.warn(
-					`Course ${payment.courseId} not found or amount is missing, skipping revenue update.`,
-				);
 			}
 
 			const createProgressPromise = this.coursesService.createProgress(
@@ -156,20 +147,9 @@ export class PaymentsService {
 				payment.courseId,
 			);
 
-			const status = isSuccess ? 'paid' : 'canceled';
-			const updatePaymentPromise = this.prismaService.payment.update({
-				where: { id: orderCode },
-				data: { status },
-			});
+			await Promise.all([updateRevenuePromise, createProgressPromise]);
 
-			await Promise.all([
-				updateRolePromise,
-				updatePaymentPromise,
-				updateRevenuePromise,
-				createProgressPromise,
-			]);
-
-			this.logger.debug(`Payment ${orderCode} marked as ${status}`);
+			this.logger.debug(`Webhook processing completed successfully.`);
 			return 'Webhook processed successfully';
 		} catch (error) {
 			this.logger.error(`Error processing webhook: ${error.message}`);

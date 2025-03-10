@@ -115,7 +115,11 @@ export class WithdrawalsService {
 				withdrawal.teacherId.toString(),
 			);
 
-			const email = teacher.email_addresses[0]?.email_address;
+			this.logger.debug('Teacher found', teacher);
+
+			const email = teacher.emailAddresses?.[0]?.emailAddress;
+
+			this.logger.debug('Sending email to', email);
 			const subject =
 				dto.status === 'approved'
 					? '[BrainBox] Withdrawal Request Approved'
