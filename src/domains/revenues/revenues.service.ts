@@ -13,13 +13,12 @@ export class RevenuesService {
 		const existingRevenue = await this.prismaService.revenue.findFirst({
 			where: {
 				teacherId: createRevenueDto.teacherId,
-				courseId: createRevenueDto.courseId,
 			},
 		});
 
 		if (existingRevenue) {
 			this.logger.debug(
-				`Revenue for teacher ${createRevenueDto.teacherId} and course ${createRevenueDto.courseId} already exists`,
+				`Revenue for teacher ${createRevenueDto.teacherId} already exists`,
 			);
 
 			return existingRevenue;
@@ -30,7 +29,7 @@ export class RevenuesService {
 		});
 
 		this.logger.debug(
-			`Revenue for teacher ${createRevenueDto.teacherId} and course ${createRevenueDto.courseId} created successfully`,
+			`Revenue for teacher ${createRevenueDto.teacherId} created successfully`,
 		);
 
 		this.logger.log('Revenue created successfully');
@@ -52,27 +51,9 @@ export class RevenuesService {
 		return revenue;
 	}
 
-	async FindOneByTeacherAndCourse(teacherId: number, courseId: number) {
+	async calculateRevenue(teacherId: number, price: number) {
 		const revenue = await this.prismaService.revenue.findFirst({
-			where: { teacherId, courseId },
-		});
-
-		if (!revenue) {
-			this.logger.error(
-				`Revenue for teacher ${teacherId} and course ${courseId} not found`,
-			);
-
-			throw new NotFoundException(
-				`Revenue for teacher ${teacherId} and course ${courseId} not found`,
-			);
-		}
-
-		return revenue;
-	}
-
-	async calculateRevenue(teacherId: number, courseId: number, price: number) {
-		const revenue = await this.prismaService.revenue.findFirst({
-			where: { teacherId, courseId },
+			where: { teacherId },
 		});
 
 		if (!revenue) {
@@ -84,7 +65,6 @@ export class RevenuesService {
 
 			const newRevenue = await this.create({
 				teacherId,
-				courseId,
 				totalRevenue,
 				serviceFee,
 				netRevenue,
@@ -93,7 +73,7 @@ export class RevenuesService {
 			});
 
 			this.logger.debug(
-				`Revenue for teacher ${teacherId} and course ${courseId} created successfully`,
+				`Revenue for teacher ${teacherId} created successfully`,
 			);
 
 			return newRevenue;
@@ -115,9 +95,7 @@ export class RevenuesService {
 			},
 		});
 
-		this.logger.debug(
-			`Revenue for teacher ${teacherId} and course ${courseId} updated successfully`,
-		);
+		this.logger.debug(`Revenue for teacher ${teacherId} updated successfully`);
 
 		return updatedRevenue;
 	}

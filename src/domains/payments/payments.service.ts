@@ -129,7 +129,7 @@ export class PaymentsService {
 		if (course) {
 			this.logger.debug(`Updating revenue for teacher ${course.teacherId}`);
 			updateRevenuePromise = this.revenuesService
-				.calculateRevenue(course.teacherId, payment.courseId, amount)
+				.calculateRevenue(course.teacherId, amount)
 				.then(() => {});
 		} else {
 			this.logger.warn(

@@ -18,15 +18,4 @@ export class RevenuesController {
 	async findAllByTeacher(@Param('id') id: string) {
 		return await this.revenuesService.findAllByTeacher(+id);
 	}
-
-	@Get('teacher/:teacherId/course/:courseId')
-	async FindOneByTeacherAndCourse(
-		@Param('teacherId') teacherId: string,
-		@Param('courseId') courseId: string,
-	) {
-		return await this.revenuesService.FindOneByTeacherAndCourse(
-			+teacherId,
-			+courseId,
-		);
-	}
 }
