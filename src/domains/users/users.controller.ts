@@ -6,10 +6,13 @@ import {
 	HttpStatus,
 	Param,
 	Post,
+	Put,
 	Request,
 } from '@nestjs/common';
 
 import { BecomeATeacherDto } from '@/users/dto/become-a-teacher.dto';
+import { CreateBankAccountDto } from '@/users/dto/create-bank-account.dto';
+import { UpdateBankAccountDto } from '@/users/dto/update-bank-account.dto';
 import { UsersService } from '@/users/users.service';
 
 @Controller('users')
@@ -40,5 +43,21 @@ export class UsersController {
 	@Get('teachers/top/:top')
 	async getTopTeachers(@Param('top') top: string) {
 		return this.usersService.getTopTeachers(+top);
+	}
+
+	@Post('teachers/:teacherId/create-bank-account')
+	async createBankAccount(
+		@Param('teacherId') teacherId: string,
+		@Body() dto: CreateBankAccountDto,
+	) {
+		return this.usersService.createBankAccount(+teacherId, dto);
+	}
+
+	@Put('teachers/:teacherId/update-bank-account')
+	async updateBankAccount(
+		@Param('teacherId') teacherId: string,
+		@Body() dto: UpdateBankAccountDto,
+	) {
+		return this.usersService.updateBankAccount(+teacherId, dto);
 	}
 }

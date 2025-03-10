@@ -1,6 +1,6 @@
 {
 	"name": "brainbox-backend",
-	"version": "1.6.0",
+	"version": "1.7.0",
 	"description": "Backend for BrainBox",
 	"author": "lzaycoe (Lazy Code)",
 	"private": true,
@@ -39,6 +39,7 @@
 		"cookie-parser": "1.4.7",
 		"express": "4.21.2",
 		"morgan": "1.10.0",
+		"nodemailer": "6.10.0",
 		"passport": "0.7.0",
 		"passport-custom": "1.1.1",
 		"passport-jwt": "4.0.1",
@@ -58,6 +59,7 @@
 		"@types/express": "5.0.0",
 		"@types/morgan": "1.9.9",
 		"@types/node": "20.17.0",
+		"@types/nodemailer": "^6.4.17",
 		"@types/passport-jwt": "4.0.1",
 		"@types/passport-local": "1.0.38",
 		"@typescript-eslint/eslint-plugin": "8.24.0",

@@ -1,43 +1,21 @@
-import {
-	Body,
-	Controller,
-	Delete,
-	Get,
-	Param,
-	Patch,
-	Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { CreateRevenueDto } from '@/revenues/dto/create-revenue.dto';
-import { UpdateRevenueDto } from '@/revenues/dto/update-revenue.dto';
 import { RevenuesService } from '@/revenues/revenues.service';
 
+@ApiTags('Revenues')
 @Controller('revenues')
 export class RevenuesController {
 	constructor(private readonly revenuesService: RevenuesService) {}
 
 	@Post()
-	create(@Body() createRevenueDto: CreateRevenueDto) {
-		return this.revenuesService.create(createRevenueDto);
+	async create(@Body() createRevenueDto: CreateRevenueDto) {
+		return await this.revenuesService.create(createRevenueDto);
 	}
 
-	@Get()
-	findAll() {
-		return this.revenuesService.findAll();
-	}
-
-	@Get(':id')
-	findOne(@Param('id') id: string) {
-		return this.revenuesService.findOne(+id);
-	}
-
-	@Patch(':id')
-	update(@Param('id') id: string, @Body() updateRevenueDto: UpdateRevenueDto) {
-		return this.revenuesService.update(+id, updateRevenueDto);
-	}
-
-	@Delete(':id')
-	remove(@Param('id') id: string) {
-		return this.revenuesService.remove(+id);
+	@Get('teacher/:teacherId')
+	async findByTeacherId(@Param('teacherId') teacherId: string) {
+		return await this.revenuesService.findByTeacherId(+teacherId);
 	}
 }

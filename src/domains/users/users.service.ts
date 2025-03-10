@@ -15,6 +15,8 @@ import { Webhook } from 'svix';
 import { PayOSService } from '@/payments/payos.service';
 import { PrismaService } from '@/providers/prisma.service';
 import { BecomeATeacherDto } from '@/users/dto/become-a-teacher.dto';
+import { CreateBankAccountDto } from '@/users/dto/create-bank-account.dto';
+import { UpdateBankAccountDto } from '@/users/dto/update-bank-account.dto';
 
 @Injectable()
 export class UsersService {
@@ -260,5 +262,98 @@ export class UsersService {
 		this.logger.debug('Detailed top teachers:', detailedTeachers);
 
 		return detailedTeachers;
+	}
+
+	async createBankAccount(teacherId: number, dto: CreateBankAccountDto) {
+		const teacher = await this.prismaService.user.findUnique({
+			where: { id: teacherId },
+		});
+
+		if (!teacher) {
+			this.logger.debug(`Teacher ${teacherId} not found`);
+			throw new NotFoundException('Teacher not found');
+		}
+
+		const existingPayment = await this.prismaService.payment.findFirst({
+			where: {
+				userId: teacherId,
+				courseId: null,
+				status: 'paid',
+			},
+		});
+
+		if (!existingPayment) {
+			this.logger.debug(`User ${teacherId} has not paid for Become a Teacher`);
+			throw new ConflictException('User has not paid for Become a Teacher');
+		}
+
+		const clerkUser = await this.clerkClient.users.getUser(teacher.clerkId);
+
+		if (!clerkUser) {
+			throw new NotFoundException('Clerk user not found');
+		}
+
+		this.logger.debug(clerkUser);
+
+		const existingMetadata = clerkUser.publicMetadata || {};
+
+		const newBankAccount = await this.clerkClient.users.updateUser(
+			teacher.clerkId,
+			{
+				publicMetadata: {
+					...existingMetadata,
+					bank_account: {
+						bank_name: dto.bank_name,
+						account_number: dto.account_number,
+						account_holder: dto.account_holder,
+					},
+				},
+			},
+		);
+
+		this.logger.debug('Bank account created:', newBankAccount);
+		this.logger.log('Bank account created for teacher:', teacherId);
+
+		return newBankAccount;
+	}
+
+	async updateBankAccount(teacherId: number, dto: UpdateBankAccountDto) {
+		const teacher = await this.prismaService.user.findUnique({
+			where: { id: teacherId },
+		});
+
+		if (!teacher) {
+			this.logger.debug(`Teacher ${teacherId} not found`);
+			throw new NotFoundException('Teacher not found');
+		}
+
+		const clerkUser = await this.clerkClient.users.getUser(teacher.clerkId);
+
+		if (!clerkUser) {
+			throw new NotFoundException('Clerk user not found');
+		}
+
+		this.logger.debug(clerkUser);
+
+		const existingMetadata = clerkUser.publicMetadata || {};
+
+		const updatedBankAccount = await this.clerkClient.users.updateUser(
+			teacher.clerkId,
+			{
+				publicMetadata: {
+					...existingMetadata,
+					bank_account: {
+						bank_name: dto.bank_name,
+						account_number: dto.account_number,
+						account_holder: dto.account_holder,
+					},
+				},
+			},
+		);
+
+		this.logger.debug('Bank account updated:', updatedBankAccount);
+		this.logger.log('Bank account updated for teacher:', teacherId);
+
+		return updatedBankAccount;
 	}
 }
