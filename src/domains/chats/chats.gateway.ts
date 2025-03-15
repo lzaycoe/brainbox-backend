@@ -71,6 +71,37 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	@SubscribeMessage('getConversations')
+	async handleGetConversations(
+		@MessageBody() payload: string,
+		@ConnectedSocket() client: Socket,
+	) {
+		try {
+			const parsedPayload = JSON.parse(payload);
+			const { userId } = parsedPayload;
+
+			if (!userId) {
+				client.emit('Error', { message: 'User ID is required' });
+				return;
+			}
+
+			const conversations =
+				await this.chatsService.getUserConversations(userId);
+
+			if (!conversations || conversations.length === 0) {
+				this.logger.log(`No conversations found for user ${userId}`);
+				client.emit('Get Conversations', []);
+				return;
+			}
+
+			this.logger.log(`✅ Conversations found for user ${userId}`);
+			client.emit('Get Conversations', conversations);
+		} catch (error) {
+			this.logger.error('❌ Error fetching conversations:', error);
+			client.emit('Error', { message: 'Failed to fetch conversations' });
+		}
+	}
+
 	@SubscribeMessage('sendMessage')
 	async handleSendMessage(@MessageBody() payload: string) {
 		const parsedPayload = JSON.parse(payload);
