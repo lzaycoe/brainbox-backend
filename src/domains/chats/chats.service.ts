@@ -42,7 +42,7 @@ export class ChatsService {
 	}
 
 	async getUserConversations(userId: number) {
-		const conversations = this.prismaService.conversation.findMany({
+		const conversations = await this.prismaService.conversation.findMany({
 			where: {
 				OR: [{ userAId: userId }, { userBId: userId }],
 			},
@@ -56,6 +56,7 @@ export class ChatsService {
 		}
 
 		this.logger.log('Conversations found for user');
+		this.logger.debug('conversations:', conversations);
 
 		return conversations;
 	}
