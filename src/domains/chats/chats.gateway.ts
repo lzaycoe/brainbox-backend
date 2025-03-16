@@ -122,10 +122,21 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() payload: string,
 		@ConnectedSocket() client: Socket,
 	) {
-		const parsedPayload = JSON.parse(payload);
-		const { id } = parsedPayload;
-		const messages = await this.chatsService.getMessages(+id);
-		client.emit('Messages', messages);
+		try {
+			const parsedPayload = JSON.parse(payload);
+			const conversationId = Number(parsedPayload.id);
+
+			if (isNaN(conversationId)) {
+				console.error('Invalid conversationId:', parsedPayload.id);
+				return client.emit('error', 'Invalid conversationId');
+			}
+
+			const messages = await this.chatsService.getMessages(conversationId);
+			client.emit('Messages', messages);
+		} catch (error) {
+			console.error('Error in handleGetMessages:', error);
+			client.emit('error', 'Failed to get messages');
+		}
 	}
 
 	@SubscribeMessage('updateMessageStatus')
