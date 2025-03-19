@@ -29,6 +29,23 @@ export class UsersService {
 		private readonly clerkClient: ClerkClient,
 	) {}
 
+	async findAll() {
+		const users = await this.prismaService.user.findMany();
+
+		this.logger.debug('Users found:', users);
+
+		const detailedUsers = await Promise.all(
+			users.map(async (user) => {
+				const clerkUser = await this.clerkClient.users.getUser(user.clerkId);
+				return { ...user, clerkUser };
+			}),
+		);
+
+		this.logger.debug('Detailed users:', detailedUsers);
+
+		return detailedUsers;
+	}
+
 	async findOne(valueId: string): Promise<any> {
 		try {
 			let user;
