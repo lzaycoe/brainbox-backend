@@ -19,6 +19,11 @@ import { UsersService } from '@/users/users.service';
 export class UsersController {
 	constructor(private readonly usersService: UsersService) {}
 
+	@Get()
+	async findAll() {
+		return this.usersService.findAll();
+	}
+
 	@Get('/:valueId')
 	async findOne(@Param('valueId') valueId: string) {
 		return this.usersService.findOne(valueId);
