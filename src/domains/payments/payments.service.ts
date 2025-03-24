@@ -157,6 +157,15 @@ export class PaymentsService {
 		}
 	}
 
+	async findAll() {
+		const payments = await this.prismaService.payment.findMany();
+
+		this.logger.debug(`Found ${payments.length} payments`, payments);
+		this.logger.log('Payments found:', payments.length);
+
+		return payments;
+	}
+
 	async findByUserId(userId: number) {
 		const payments = await this.prismaService.payment.findMany({
 			where: { userId },
