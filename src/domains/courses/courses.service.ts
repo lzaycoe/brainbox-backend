@@ -132,6 +132,19 @@ export class CoursesService {
 		}
 	}
 
+	async findAllProgresses() {
+		const progresses = await this.prismaService.progress.findMany();
+
+		if (!progresses) {
+			this.logger.log(`Progresses not found`);
+		}
+
+		this.logger.log(`Found ${progresses.length} progresses`);
+		this.logger.debug('Progresses', progresses);
+
+		return progresses;
+	}
+
 	async createProgress(userId: number, courseId: number) {
 		const existingPayment = await this.prismaService.payment.findFirst({
 			where: { userId, courseId, status: 'paid' },

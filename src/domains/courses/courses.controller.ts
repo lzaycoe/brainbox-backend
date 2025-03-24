@@ -53,6 +53,11 @@ export class CoursesController {
 		return await this.coursesService.delete(+id);
 	}
 
+	@Get('progresses/find-all')
+	async findAllProgresses() {
+		return await this.coursesService.findAllProgresses();
+	}
+
 	@Post(':id/user/:userId/progress')
 	async createProgress(
 		@Param('id') id: string,
