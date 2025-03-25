@@ -196,4 +196,44 @@ export class RevenuesService {
 			totalCoursesCompleted: totalCoursesCompletedValue,
 		};
 	}
+
+	async findTeacherReport(teacherId: number) {
+		const totalCourses = await this.prismaService.course.findMany({
+			where: { teacherId },
+		});
+
+		const totalCoursesSold = await this.prismaService.payment.findMany({
+			where: {
+				status: 'paid',
+				courseId: {
+					in: totalCourses
+						.filter((course) => course.status === 'approved')
+						.map((course) => course.id),
+				},
+			},
+		});
+
+		const totalCoursesCompleted = await this.prismaService.progress.findMany({
+			where: {
+				courseId: {
+					in: totalCourses
+						.filter((course) => course.status === 'approved')
+						.map((course) => course.id),
+				},
+				courseProgress: 100,
+			},
+		});
+
+		const revenues = await this.findByTeacherId(teacherId);
+
+		return {
+			totalCourses: totalCourses.length,
+			totalCoursesPending: totalCourses.filter(
+				(course) => course.status === 'pending',
+			).length,
+			totalCoursesSold: totalCoursesSold.length,
+			totalCoursesCompleted: totalCoursesCompleted.length,
+			revenues,
+		};
+	}
 }

@@ -23,4 +23,9 @@ export class RevenuesController {
 	async findSystemReport() {
 		return await this.revenuesService.findSystemReport();
 	}
+
+	@Get('teacher-report/:teacherId')
+	async findTeacherReport(@Param('teacherId') teacherId: string) {
+		return await this.revenuesService.findTeacherReport(+teacherId);
+	}
 }
