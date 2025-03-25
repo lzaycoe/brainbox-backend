@@ -198,33 +198,37 @@ export class RevenuesService {
 	}
 
 	async findTeacherReport(teacherId: number) {
-		const totalCourses = await this.prismaService.course.findMany({
-			where: { teacherId },
-		});
-
-		const totalCoursesSold = await this.prismaService.payment.findMany({
-			where: {
-				status: 'paid',
-				courseId: {
-					in: totalCourses
-						.filter((course) => course.status === 'approved')
-						.map((course) => course.id),
-				},
-			},
-		});
-
-		const totalCoursesCompleted = await this.prismaService.progress.findMany({
-			where: {
-				courseId: {
-					in: totalCourses
-						.filter((course) => course.status === 'approved')
-						.map((course) => course.id),
-				},
-				courseProgress: 100,
-			},
-		});
-
-		const revenues = await this.findByTeacherId(teacherId);
+		const [totalCourses, totalCoursesSold, totalCoursesCompleted, revenues] =
+			await Promise.all([
+				this.prismaService.course.findMany({ where: { teacherId } }),
+				this.prismaService.payment.findMany({
+					where: {
+						status: 'paid',
+						courseId: {
+							in: (
+								await this.prismaService.course.findMany({
+									where: { teacherId, status: 'approved' },
+									select: { id: true },
+								})
+							).map((course) => course.id),
+						},
+					},
+				}),
+				this.prismaService.progress.findMany({
+					where: {
+						courseId: {
+							in: (
+								await this.prismaService.course.findMany({
+									where: { teacherId, status: 'approved' },
+									select: { id: true },
+								})
+							).map((course) => course.id),
+						},
+						courseProgress: 100,
+					},
+				}),
+				this.findByTeacherId(teacherId),
+			]);
 
 		return {
 			totalCourses: totalCourses.length,
