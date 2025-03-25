@@ -116,6 +116,18 @@ export class PaymentsService {
 				await this.clerkClient.users.updateUser(user.clerkId, {
 					publicMetadata: { role: 'teacher' },
 				});
+
+				await this.prismaService.revenue.create({
+					data: {
+						teacherId: user.id,
+						totalRevenue: 0,
+						totalWithdrawn: 0,
+						serviceFee: 0,
+						netRevenue: 0,
+						availableForWithdraw: 0,
+					},
+				});
+
 				this.logger.debug(`User ${user.id} has been updated to teacher role`);
 				return 'Webhook processed successfully for teacher registration';
 			}
