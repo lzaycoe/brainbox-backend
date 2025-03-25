@@ -9,9 +9,10 @@ import { PayOSService } from '@/payments/payos.service';
 import { ClerkClientProvider } from '@/providers/clerk.service';
 import { PrismaService } from '@/providers/prisma.service';
 import { RevenuesService } from '@/revenues/revenues.service';
+import { UsersModule } from '@/users/users.module';
 
 @Module({
-	imports: [ConfigModule.forFeature(payOSConfig)],
+	imports: [ConfigModule.forFeature(payOSConfig), UsersModule],
 	controllers: [PaymentsController],
 	providers: [
 		PaymentsService,

@@ -19,6 +19,11 @@ export class PaymentsController {
 		return await this.paymentsService.processWebhook(payload);
 	}
 
+	@Get()
+	async findAll() {
+		return this.paymentsService.findAll();
+	}
+
 	@Get('user/:userId')
 	async findByUserId(@Param('userId') userId: string) {
 		return this.paymentsService.findByUserId(+userId);

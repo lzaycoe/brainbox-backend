@@ -12,5 +12,6 @@ import { UsersService } from '@/users/users.service';
 	imports: [ConfigModule.forFeature(payOSConfig)],
 	controllers: [UsersController],
 	providers: [UsersService, PrismaService, ClerkClientProvider, PayOSService],
+	exports: [UsersService],
 })
 export class UsersModule {}
