@@ -124,7 +124,9 @@ export class WithdrawalsService {
 				dto.status === 'approved'
 					? '[BrainBox] Withdrawal Request Approved'
 					: '[BrainBox] Withdrawal Request Rejected';
-			const teacherName = teacher.first_name + ' ' + teacher.last_name;
+			const teacherName = teacher.firstName + ' ' + teacher.lastName;
+
+			this.logger.debug('Teacher Name', teacherName);
 			const amount = new Intl.NumberFormat('vi-VN', {
 				style: 'currency',
 				currency: 'VND',
